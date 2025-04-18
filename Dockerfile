@@ -13,15 +13,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install pipx and ensure its path is available
-RUN pip install --no-cache-dir pipx && pipx ensurepath
-ENV PATH="/root/.local/bin:$PATH"
+# Install uv (replace pipx)
+RUN pip install --no-cache-dir uv
 
 # Copy project files
 COPY . /app
 
-# Install your project in editable mode using pipx
-RUN pipx install --editable .
+# Install your project in editable mode using uv
+RUN uv pip install -e .
 
 # Default command (change as needed)
 CMD ["chunker", "--help"]
