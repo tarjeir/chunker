@@ -42,6 +42,34 @@ This tool chunks source code files using [LangChain's RecursiveCharacterTextSpli
    pipx install --editable .
    ```
 
+## Setting up ChromaDB with Docker
+
+You can run a ChromaDB server using Docker. The following command will start ChromaDB listening on port 8000:
+
+```sh
+docker run -d --name chromadb -p 8000:8000 chromadb/chroma
+```
+
+- This will pull the latest ChromaDB image and run it in detached mode.
+- The server will be accessible at `http://localhost:8000`.
+
+If you want to persist data between restarts, you can mount a local directory:
+
+```sh
+docker run -d --name chromadb -p 8000:8000 -v $(pwd)/chroma-data:/chroma/.chroma chromadb/chroma
+```
+
+- This will store ChromaDB data in the `chroma-data` directory in your current folder.
+
+**Stopping and removing the container:**
+
+```sh
+docker stop chromadb
+docker rm chromadb
+```
+
+For more information, see the [ChromaDB Docker documentation](https://docs.trychroma.com/deployment/docker).
+
 ## Usage
 
 ```sh
