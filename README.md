@@ -1,20 +1,25 @@
 # VectorCode Chunker
-## Table of Contents                                                                                                      
-- [Features](#features)  
-- [Installation](#installation)                                                                                           
-  - [Using uv](#using-uv)                                                                                                 
-  - [Using pipx](#using-pipx)                                                                                             
-- [Setting up ChromaDB with Docker](#setting-up-chromadb-with-docker)                                                     
-- [Usage](#usage)                                                                                                         
-- [Using the VectorCode CLI Proxy](#using-the-vectorcode-cli-proxy)                                                       
-- [Using the VectorCode MCP CLI Proxy](#using-the-vectorcode-mcp-cli-proxy)                                               
-- [Using the Chunker MCP](#using-the-chunker-mcp)                                                                         
-- [Using the VectorCode LSP CLI Proxy](#using-the-vectorcode-lsp-cli-proxy)                                               
-- [Usage (Installed CLI)](#usage-installed-cli)                                                                           
-- [Using Chunker MCP with Claude for Desktop](#using-chunker-mcp-with-claude-for-desktop)                                 
-- [Using VectorCode MCP with Claude for Desktop](#using-vectorcode-mcp-with-claude-for-desktop)                           
-- [Querying](#querying)                                                                                                   
-- [Output](#output)  
+
+## Table of Contents
+
+- [VectorCode Chunker](#vectorcode-chunker)
+- [Features](#features)
+- [Installation](#installation)
+  - [Using uv](#using-uv)
+  - [Using pipx](#using-pipx)
+- [Setting up ChromaDB with Docker](#setting-up-chromadb-with-docker)
+- [Usage](#usage)
+- [Using the VectorCode CLI Proxy](#using-the-vectorcode-cli-proxy)
+- [Using the VectorCode MCP CLI Proxy](#using-the-vectorcode-mcp-cli-proxy)
+- [Using the Chunker MCP](#using-the-chunker-mcp)
+- [Using the VectorCode LSP CLI Proxy](#using-the-vectorcode-lsp-cli-proxy)
+- [Usage (Installed CLI)](#usage-installed-cli)
+- [Using Chunker MCP with Claude for Desktop](#using-chunker-mcp-with-claude-for-desktop)
+- [Using VectorCode MCP with Claude for Desktop](#using-vectorcode-mcp-with-claude-for-desktop)
+- [Querying](#querying)
+- [Output](#output)
+- [License](#license)
+
 This tool chunks source code files using [LangChain's RecursiveCharacterTextSplitter](https://python.langchain.com/docs/modules/data_connection/document_transformers/recursive_text_splitter) and stores the resulting chunks in a [ChromaDB](https://www.trychroma.com/) vector database, including line range metadata for each chunk.
 
 ## Features
