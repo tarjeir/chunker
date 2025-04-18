@@ -1,7 +1,6 @@
 import argparse
 from fastmcp import FastMCP, Context
 from chunker import chunk_and_vectorise as chunk_and_vectorise_cli
-import typer
 import os
 from fastmcp.prompts.prompt import UserMessage, AssistantMessage
 from pathlib import Path
@@ -21,14 +20,18 @@ def chunk_and_vectorise(
     """
     project_dir = os.environ.get("PROJECT_DIR")
     if not project_dir:
+        ctx.log("Error: project_dir must be specified.")
         return "Error: project_dir must be specified."
     try:
         chunk_and_vectorise_cli(Path(project_dir), pattern, language)
-        return (
-            f"Chunked and vectorised files matching: {pattern} (language: {language})"
-        )
-    except typer.Exit as e:
+        ctx.log(f"Chunked and vectorised files matching: {pattern} (language: {language})")
+        return f"Chunked and vectorised files matching: {pattern} (language: {language})"
+    except SystemExit as e:
+        ctx.log(f"Error: {e}")
         return f"Error: {e}"
+    except Exception as e:
+        ctx.log(f"Unexpected error: {e}")
+        return f"Unexpected error: {e}"
 
 
 @mcp.prompt()
