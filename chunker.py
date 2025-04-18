@@ -190,11 +190,11 @@ def chunk_and_vectorise(
 )
 def chunk_and_vectorise_mcp(ctx: typer.Context):
     import sys
-    import chunker_mcp
+    from chunker import main as chunker_mcp_main
 
     sys.argv = [sys.argv[0]] + ctx.args
 
-    chunker_mcp.main()
+    chunker_mcp_main()
 
 
 @app.command(
