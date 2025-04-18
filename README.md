@@ -107,6 +107,28 @@ Or to run any other `vectorcode` subcommand:
 python chunker.py vectorcode-cli <subcommand> [options...]
 ```
 
+## Using the VectorCode MCP CLI Proxy
+
+You can access the `vectorcode` MCP (Multi-Collection Processor) CLI through this tool using the `vectorcode-mcp` command. This forwards all arguments to the underlying `vectorcode.mcp_main` command-line interface.
+
+**Example:**
+
+```sh
+python chunker.py vectorcode-mcp some-mcp-subcommand --option value
+```
+
+All arguments after `vectorcode-mcp` are passed directly to the `vectorcode.mcp_main` CLI. For example, to check available MCP commands:
+
+```sh
+python chunker.py vectorcode-mcp --help
+```
+
+Or to run any other MCP subcommand:
+
+```sh
+python chunker.py vectorcode-mcp <subcommand> [options...]
+```
+
 ## Usage (Installed CLI)
 
 If you have installed this project using `pipx` or `pip install`, the `chunker` command will be available on your PATH.
@@ -130,6 +152,12 @@ chunker chunk-and-vectorise "*.py"
 Chunk all JavaScript files in a subdirectory:
 ```sh
 chunker chunk-and-vectorise "src/**/*.js" --language javascript
+```
+
+You can also use the `vectorcode-mcp` subcommand in the same way:
+
+```sh
+chunker vectorcode-mcp <subcommand> [options...]
 ```
 
 If installed with pipx, you can run the CLI directly:
