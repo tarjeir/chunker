@@ -8,6 +8,7 @@ from vectorcode.chunking import (
     ChunkerBase,
 )
 from vectorcode.cli_utils import Config
+from vectorcode.vectorise import vectorise
 
 app = typer.Typer()
 
@@ -46,7 +47,7 @@ def chunk_and_vectorise(
                 code = f.read()
             chunks = splitter.split_text(code)
             # You may want to adapt this to your vectorise API
-            # await vectorise(chunks)
+            vectorise(chunks)
             typer.echo(f"Processed {file_path} ({len(chunks)} chunks)")
     else:
         chunker_cls = CHUNKER_REGISTRY.get(chunker)
