@@ -9,8 +9,10 @@ from chromadb.api.types import IncludeEnum
 from vectorcode.cli_utils import Config, expand_path
 from vectorcode.common import get_client, get_collection, verify_ef
 
+
 def get_uuid() -> str:
     return uuid.uuid4().hex
+
 
 async def add_file_with_langchain(
     file_path: str,
@@ -67,6 +69,7 @@ async def add_file_with_langchain(
         async with stats_lock:
             stats["add"] += 1
 
+
 async def langchain_vectorise(configs: Config, language: str = "python") -> int:
     assert configs.project_root is not None
     client = await get_client(configs)
@@ -103,14 +106,18 @@ async def langchain_vectorise(configs: Config, language: str = "python") -> int:
     print(f"Added: {stats['add']}, Updated: {stats['update']}")
     return 0
 
+
 if __name__ == "__main__":
     import typer
+
     app = typer.Typer()
 
     @app.command()
     def add_file(
         file_path: str = typer.Argument(..., help="Path to the file to vectorise"),
-        language: str = typer.Option("python", help="Programming language for splitting"),
+        language: str = typer.Option(
+            "python", help="Programming language for splitting"
+        ),
     ):
         configs = Config()
         configs.files = [file_path]
