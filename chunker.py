@@ -70,7 +70,7 @@ def chunk_and_vectorise(
             else:
                 chunks = []
             # You may want to adapt this to your vectorise API
-            # await vectorise(chunks)
+            vectorise(chunks)
             typer.echo(f"Processed {file_path} ({len(chunks)} chunks)")
 
 
