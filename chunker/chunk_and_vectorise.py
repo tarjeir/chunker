@@ -1,8 +1,8 @@
-import typer
-from pathlib import Path
+
 import asyncio
 import os
 import uuid
+from pathlib import Path
 from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
 from chromadb.api.types import IncludeEnum
 from vectorcode.cli_utils import Config, expand_path
@@ -13,8 +13,6 @@ logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
 logger = logging.getLogger(__name__)
-
-app = typer.Typer()
 
 
 def get_uuid() -> str:
