@@ -249,6 +249,47 @@ Use the prompts and commands as described in the "Using the Chunker MCP" section
 
 ---
 
+## Using VectorCode MCP with Claude for Desktop
+
+You can also use the VectorCode MCP (Multi-Collection Processor) via the `vectorcode_mcp` proxy command with Claude for Desktop. This allows you to access all MCP features of VectorCode from Claude's interface.
+
+### 1. Install Chunker (and VectorCode) Globally with pipx
+
+If you haven't already, install your chunker project globally:
+
+```sh
+pipx install --editable .
+```
+
+This will make the `chunker` command available globally, including the `vectorcode_mcp` proxy.
+
+### 2. Configure Claude for Desktop to Use the VectorCode MCP Server
+
+Add the following to your Claude for Desktop configuration (or use the UI to add a new MCP server):
+
+```json
+{
+  "mcpServers": {
+    "vectorcode": {
+      "command": "chunker",
+      "args": [
+        "vectorcode-mcp"
+      ]
+    }
+  }
+}
+```
+
+- The `chunker` command is provided globally by `pipx`.
+- The `args` array specifies the `vectorcode-mcp` subcommand, which proxies to the VectorCode MCP.
+
+### 3. Use the Tool in Claude
+
+Once configured, you can invoke the VectorCode MCP tool from Claude for Desktop.  
+Use the prompts and commands as described in the VectorCode documentation.
+
+---
+
 ## Querying
 
 After vectorising your files, you can query your ChromaDB collection for relevant code chunks using the `vectorcode` CLI.
