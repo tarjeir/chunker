@@ -114,19 +114,13 @@ You can access the `vectorcode` MCP (Multi-Collection Processor) CLI through thi
 **Example:**
 
 ```sh
-python chunker.py vectorcode-mcp some-mcp-subcommand --option value
+python chunker.py vectorcode-mcp --option value
 ```
 
-All arguments after `vectorcode-mcp` are passed directly to the `vectorcode.mcp_main` CLI. For example, to check available MCP commands:
+All arguments after `vectorcode-mcp` are passed directly to the `vectorcode.mcp_main` CLI. For example, to see available options:
 
 ```sh
 python chunker.py vectorcode-mcp --help
-```
-
-Or to run any other MCP subcommand:
-
-```sh
-python chunker.py vectorcode-mcp <subcommand> [options...]
 ```
 
 ## Usage (Installed CLI)
@@ -157,7 +151,7 @@ chunker chunk-and-vectorise "src/**/*.js" --language javascript
 You can also use the `vectorcode-mcp` subcommand in the same way:
 
 ```sh
-chunker vectorcode-mcp <subcommand> [options...]
+chunker vectorcode-mcp [options...]
 ```
 
 If installed with pipx, you can run the CLI directly:
