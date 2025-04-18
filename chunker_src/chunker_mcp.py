@@ -28,7 +28,7 @@ async def chunk_and_vectorise(
     chroma_port = os.environ.get("CHROMA_PORT", None)
     chroma_port = int(chroma_port) if chroma_port else None
     try:
-        chunk_and_vectorise_core(
+        await chunk_and_vectorise_core(
             Path(project_dir), pattern, language, chroma_host, chroma_port
         )
         await ctx.log(
