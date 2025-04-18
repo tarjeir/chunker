@@ -197,6 +197,58 @@ If installed with pipx, you can run the CLI directly:
 chunker chunk-and-vectorise "*.py" --language python
 ```
 
+## Using Chunker MCP with Claude for Desktop
+
+You can integrate the Chunker MCP with [Claude for Desktop](https://www.anthropic.com/claude) to enable code chunking and vectorisation directly from Claude's interface. The recommended way is to install the tool globally using `pipx` and configure Claude for Desktop to use the MCP protocol.
+
+### 1. Install Chunker Globally with pipx
+
+First, ensure you have [pipx](https://pypa.github.io/pipx/) installed:
+
+```sh
+python -m pip install --user pipx
+pipx ensurepath
+```
+
+Then, install your chunker project globally (from your project directory):
+
+```sh
+pipx install --editable .
+```
+
+This will make the `chunker` command available globally.
+
+### 2. Configure Claude for Desktop to Use the MCP Server
+
+Claude for Desktop supports the `{"mcpServers":{}}` protocol for tool integration.  
+Add the following to your Claude for Desktop configuration (or use the UI to add a new MCP server):
+
+```json
+{
+  "mcpServers": {
+    "chunker": {
+      "command": "chunker",
+      "args": [
+        "chunk-and-vectorise-mcp",
+        "--project_dir",
+        "/path/to/your/project"
+      ]
+    }
+  }
+}
+```
+
+- Replace `/path/to/your/project` with the absolute path to your codebase.
+- The `chunker` command is provided globally by `pipx`.
+- The `args` array specifies the subcommand and required arguments.
+
+### 3. Use the Tool in Claude
+
+Once configured, you can invoke the chunker MCP tool from Claude for Desktop.  
+Use the prompts and commands as described in the "Using the Chunker MCP" section above.
+
+---
+
 ## Querying
 
 After vectorising your files, you can query your ChromaDB collection for relevant code chunks using the `vectorcode` CLI.
