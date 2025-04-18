@@ -247,7 +247,7 @@ Add the following to your Claude for Desktop configuration (or use the UI to add
 {
   "mcpServers": {
     "chunker": {
-      "command": "chunker",
+      "command": "/<home DIR>/.local/bin/chunker",
       "args": [
         "chunk-and-vectorise-mcp",
         "--project_dir",
@@ -257,6 +257,13 @@ Add the following to your Claude for Desktop configuration (or use the UI to add
   }
 }
 ```
+
+- Replace `/<home DIR>` with your actual home directory (e.g., `/home/username` or `/Users/username`).
+- Replace `/path/to/your/project` with the absolute path to your codebase.
+- The `command` field should point to the full path of the installed `chunker` CLI, which is typically located at `~/.local/bin/chunker` when installed with pipx or pip.
+- The `args` array specifies the subcommand and required arguments.
+
+> **Note:** If `~/.local/bin` is in your system PATH, you can use `"chunker"` as the command instead of the full path.
 
 - Replace `/path/to/your/project` with the absolute path to your codebase.
 - The `chunker` command is provided globally by `pipx`.
