@@ -1,8 +1,12 @@
 import typer
 from pathlib import Path
-from vectorcode.subcommands import vectorise
 from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
-from vectorcode.chunking import StringChunker, FileChunker, TreeSitterChunker, ChunkerBase
+from vectorcode.chunking import (
+    StringChunker,
+    FileChunker,
+    TreeSitterChunker,
+    ChunkerBase,
+)
 from vectorcode.cli_utils import Config
 
 app = typer.Typer()
