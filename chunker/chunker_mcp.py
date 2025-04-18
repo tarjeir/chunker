@@ -12,17 +12,22 @@ async def chunk_and_vectorise(
     pattern: str,
     language: str,
     ctx: Context,
+    chroma_host: str = None,
+    chroma_port: int = None,
 ) -> str:
     """
     Chunk and vectorise files matching the given pattern and language.
     `project_dir` is the root directory of the project to search for files.
+    `chroma_host` and `chroma_port` specify the Chroma DB connection.
     """
     project_dir = os.environ.get("PROJECT_DIR")
     if not project_dir:
         await ctx.log("error", "Error: project_dir must be specified.")
         return "Error: project_dir must be specified."
     try:
-        chunk_and_vectorise_cli(Path(project_dir), pattern, language)
+        chunk_and_vectorise_cli(
+            Path(project_dir), pattern, language, chroma_host, chroma_port
+        )
         await ctx.log(
             "info",
             f"Chunked and vectorised files matching: {pattern} (language: {language})",
@@ -115,9 +120,13 @@ def language_help() -> str:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project_dir", type=str, required=True)
+    parser.add_argument("--chroma_host", type=str, default=None)
+    parser.add_argument("--chroma_port", type=int, default=None)
     args, _ = parser.parse_known_args()
 
     os.environ["PROJECT_DIR"] = args.project_dir
+    os.environ["CHROMA_HOST"] = args.chroma_host or ""
+    os.environ["CHROMA_PORT"] = str(args.chroma_port) if args.chroma_port else ""
 
     mcp.run()
 
