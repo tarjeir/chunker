@@ -25,6 +25,7 @@ def chunk_and_vectorise(
         return f"Error: {e}"
 
 
+
 @mcp.prompt()
 def pattern_help() -> str:
     """
@@ -59,6 +60,44 @@ def example_patterns() -> list:
             "Use 'docs/**/*.md' to match all Markdown files under the docs directory."
         ),
     ]
+
+
+@mcp.prompt()
+def language_help() -> str:
+    """
+    Explains how to choose the language for chunking and vectorising.
+    """
+    return (
+        "Specify the programming language of the files you want to chunk and vectorise using the --language option. "
+        "Supported languages are:\n"
+        "- cpp\n"
+        "- go\n"
+        "- java\n"
+        "- kotlin\n"
+        "- js\n"
+        "- ts\n"
+        "- php\n"
+        "- proto\n"
+        "- python\n"
+        "- rst\n"
+        "- ruby\n"
+        "- rust\n"
+        "- scala\n"
+        "- swift\n"
+        "- markdown\n"
+        "- latex\n"
+        "- html\n"
+        "- sol\n"
+        "- csharp\n"
+        "- cobol\n"
+        "- c\n"
+        "- lua\n"
+        "- perl\n"
+        "- haskell\n"
+        "- elixir\n"
+        "- powershell\n"
+        "Example: Use '--language python' for Python files, or '--language js' for JavaScript files."
+    )
 
 
 def main():
