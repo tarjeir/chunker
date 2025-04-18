@@ -17,3 +17,7 @@ chunker = "chunker:app"
 dev = [
     "pipx>=1.7.1",
 ]
+
+[tool.setuptools.packages.find]
+include = ["chunker*"]
+exclude = ["deployment*"]
