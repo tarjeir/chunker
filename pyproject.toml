@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [project.scripts]
-chunker = "chunker:app"
+chunker = "chunker_src:app"
 
 [dependency-groups]
 dev = [

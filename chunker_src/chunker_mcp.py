@@ -131,7 +131,3 @@ def main():
     os.environ["CHROMA_HOST"] = args.chroma_host or "127.0.0.1"
     os.environ["CHROMA_PORT"] = str(args.chroma_port) if args.chroma_port else "8000"
     mcp.run()
-
-
-if __name__ == "__main__":
-    main()
