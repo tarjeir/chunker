@@ -1,4 +1,3 @@
-
 import asyncio
 import os
 import uuid
@@ -99,15 +98,13 @@ async def add_file_with_langchain(
 def chunk_and_vectorise_core(
     project_dir: Path,
     pattern: str,
-    language: str = "python",
-    chroma_host: str = None,
-    chroma_port: int = None,
+    language: str,
+    chroma_host: str | None,
+    chroma_port: int | None,
 ):
     # Check if pattern is missing or misused
     if pattern.startswith("--"):
-        raise ValueError(
-            "The first argument must be the file pattern (e.g., '*.py')."
-        )
+        raise ValueError("The first argument must be the file pattern (e.g., '*.py').")
 
     # Validate language
     if language.lower() not in [l.name.lower() for l in Language]:

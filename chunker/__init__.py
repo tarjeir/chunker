@@ -1,10 +1,9 @@
-
 import argparse
 import os
 from pathlib import Path
 from fastmcp import FastMCP, Context
 from fastmcp.prompts.prompt import UserMessage, AssistantMessage
-from chunker import chunk_and_vectorise as chunk_and_vectorise_cli
+from chunker.chunk_and_vectorise import chunk_and_vectorise_core
 
 mcp = FastMCP("Chunker MCP")
 
@@ -24,9 +23,14 @@ async def chunk_and_vectorise(
         await ctx.log("error", "Error: project_dir must be specified.")
         return "Error: project_dir must be specified."
     try:
-        chunk_and_vectorise_cli(Path(project_dir), pattern, language)
-        await ctx.log("info", f"Chunked and vectorised files matching: {pattern} (language: {language})")
-        return f"Chunked and vectorised files matching: {pattern} (language: {language})"
+        chunk_and_vectorise_core(Path(project_dir), pattern, language)
+        await ctx.log(
+            "info",
+            f"Chunked and vectorised files matching: {pattern} (language: {language})",
+        )
+        return (
+            f"Chunked and vectorised files matching: {pattern} (language: {language})"
+        )
     except SystemExit as e:
         await ctx.log("error", f"Error: {e}")
         return f"Error: {e}"

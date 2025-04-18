@@ -14,13 +14,40 @@ logger = logging.getLogger(__name__)
 
 app = typer.Typer()
 
-from chunker.chunk_and_vectorise import chunk_and_vectorise
+from chunker.chunk_and_vectorise import chunk_and_vectorise_core
 
-# Register the imported command with the Typer app
-# If chunk_and_vectorise is decorated with @app.command() in the imported module,
-# this import is enough to register it.
-# Otherwise, uncomment the next line to register it explicitly:
-# app.command()(chunk_and_vectorise)
+
+@app.command()
+def chunk_and_vectorise(
+    project_dir: Path = typer.Argument(
+        ..., help="Root directory of the project to search for files"
+    ),
+    pattern: str = typer.Argument(
+        ..., help="Glob pattern for files to process (e.g., '*.py')"
+    ),
+    language: str = typer.Option(
+        "python", help="Programming language for splitting (e.g., 'python')"
+    ),
+    chroma_host: str = typer.Option(None, help="ChromaDB host "),
+    chroma_port: int = typer.Option(None, help="ChromaDB port "),
+):
+    try:
+        chunk_and_vectorise_core(
+            project_dir=project_dir,
+            pattern=pattern,
+            language=language,
+            chroma_host=chroma_host,
+            chroma_port=chroma_port,
+        )
+    except ValueError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=2)
+    except FileNotFoundError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
+    except SystemExit as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=2)
 
 
 @app.command(
