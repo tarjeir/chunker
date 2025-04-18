@@ -25,7 +25,7 @@ This tool chunks source code files using [LangChain's RecursiveCharacterTextSpli
    ```sh
    uv venv .venv
    source .venv/bin/activate
-   uv pip install -r requirements.txt
+   uv sync
    ```
 
 ### Using [pipx](https://pypa.github.io/pipx/)
@@ -33,8 +33,7 @@ This tool chunks source code files using [LangChain's RecursiveCharacterTextSpli
 1. Install [pipx](https://pypa.github.io/pipx/):
 
    ```sh
-   python3 -m pip install --user pipx
-   python3 -m pipx ensurepath
+   python -m pip install --user pipx
    ```
 
 2. Install this project (from a local directory):
@@ -48,13 +47,6 @@ This tool chunks source code files using [LangChain's RecursiveCharacterTextSpli
    ```sh
    pipx install --editable path/to/your/project
    ```
-
-   Make sure you have the following packages (and their dependencies) installed:
-   - `typer`
-   - `langchain-text-splitters`
-   - `chromadb`
-   - `tqdm` (if you want progress bars)
-   - Any dependencies required by your `vectorcode` package
 
 ## Usage
 
