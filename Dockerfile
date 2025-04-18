@@ -13,16 +13,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+# Install pipx and ensure its path is available
+RUN pip install --no-cache-dir pipx && pipx ensurepath
+ENV PATH="/root/.local/bin:$PATH"
+
 # Copy project files
 COPY . /app
 
-# Install Python dependencies
-RUN pip install --upgrade pip
-RUN pip install uv
-RUN uv pip install --system .
-
-# Expose port for ChromaDB if you want to run it in the same container (optional)
-# EXPOSE 8000
+# Install your project in editable mode using pipx
+RUN pipx install --editable .
 
 # Default command (change as needed)
-CMD ["python", "chunker.py", "--help"]
+CMD ["chunker", "--help"]
