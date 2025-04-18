@@ -8,7 +8,7 @@ from vectorcode.chunking import (
     ChunkerBase,
 )
 from vectorcode.cli_utils import Config
-from vectorcode.vectorise import vectorise
+from vectorcode.subcommands import vectorise
 
 app = typer.Typer()
 
