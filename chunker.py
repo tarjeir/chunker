@@ -1,11 +1,7 @@
 import typer
 from pathlib import Path
-import asyncio
-import os
-from chromadb.api.types import IncludeEnum
-from vectorcode.cli_utils import Config, expand_path
-from vectorcode.common import get_client, get_collection, verify_ef
 import logging
+from chunker_src.chunk_and_vectorise import chunk_and_vectorise_core
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
@@ -13,8 +9,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = typer.Typer()
-
-from chunker.chunk_and_vectorise import chunk_and_vectorise_core
 
 
 @app.command()
