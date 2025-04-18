@@ -174,6 +174,13 @@ def chunk_and_vectorise(
     asyncio.run(main())
 
 
+@app.command()
+def chunk_and_vectorise_mcp():
+    import chunker_mcp
+
+    chunker_mcp.main()
+
+
 @app.command(
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
 )
@@ -208,5 +215,4 @@ def vectorcode_lsp(ctx: typer.Context):
 
 
 if __name__ == "__main__":
-    from chunker_mcp import main
-    main()
+    app()
