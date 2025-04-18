@@ -27,5 +27,19 @@ services:
     volumes:
       - vectorcode_chroma_data:/chroma/.chroma
 
+  vectorcode_chunker_test:
+    build: .
+    image: vectorcode-chunker-unique:latest
+    container_name: vectorcode_chunker_test
+    depends_on:
+      - vectorcode_chunker
+      - vectorcode_chromadb
+    command: ["/bin/bash", "deployment/test_chunked_file.sh"]
+    environment:
+      - CHROMA_HOST=vectorcode_chromadb
+      - CHROMA_PORT=8000
+    volumes:
+      - .:/app
+
 volumes:
   vectorcode_chroma_data:

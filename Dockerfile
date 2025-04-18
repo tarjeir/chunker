@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Install system dependencies (if needed)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+    build-essential curl jq \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv (replace pipx)
