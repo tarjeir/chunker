@@ -20,6 +20,8 @@ services:
     container_name: vectorcode_chromadb
     ports:
       - "8000:8000"
+    environment:
+      - CHROMA_SERVER_HOST=0.0.0.0
     volumes:
       - vectorcode_chroma_data:/chroma/.chroma
 
