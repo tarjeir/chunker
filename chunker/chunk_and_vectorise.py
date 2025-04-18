@@ -98,60 +98,44 @@ async def add_file_with_langchain(
             stats["add"] += 1
 
 
-@app.command()
-def chunk_and_vectorise(
-    project_dir: Path = typer.Argument(
-        ..., help="Root directory of the project to search for files"
-    ),
-    pattern: str = typer.Argument(
-        ..., help="Glob pattern for files to process (e.g., '*.py')"
-    ),
-    language: str = typer.Option(
-        "python", help="Programming language for splitting (e.g., 'python')"
-    ),
-    chroma_host: str = typer.Option(None, help="ChromaDB host "),
-    chroma_port: int = typer.Option(None, help="ChromaDB port "),
+def chunk_and_vectorise_core(
+    project_dir: Path,
+    pattern: str,
+    language: str = "python",
+    chroma_host: str = None,
+    chroma_port: int = None,
 ):
     # Check if pattern is missing or misused
     if pattern.startswith("--"):
-        typer.echo(
-            "Error: The first argument must be the file pattern (e.g., '*.py').",
-            err=True,
+        raise ValueError(
+            "The first argument must be the file pattern (e.g., '*.py')."
         )
-        raise typer.Exit(code=2)
 
     # Validate language
     if language.lower() not in [l.name.lower() for l in Language]:
-        typer.echo(
-            f"Error: '{language}' is not a supported language. "
-            f"Choose from: {', '.join(l.name.lower() for l in Language)}",
-            err=True,
+        raise ValueError(
+            f"'{language}' is not a supported language. "
+            f"Choose from: {', '.join(l.name.lower() for l in Language)}"
         )
-        raise typer.Exit(code=2)
 
     files = list(project_dir.glob(pattern))
     if not files:
-        typer.echo(f"No files found matching pattern: {pattern}")
-        raise typer.Exit(code=1)
+        raise FileNotFoundError(f"No files found matching pattern: {pattern}")
 
     for f in files:
         try:
             if not Path(f).resolve().is_relative_to(project_dir.resolve()):
-                typer.echo(
-                    f"Error: File {f} is outside the project directory {project_dir}",
-                    err=True,
+                raise ValueError(
+                    f"File {f} is outside the project directory {project_dir}"
                 )
-                raise typer.Exit(code=2)
         except AttributeError:
             # For Python < 3.9, is_relative_to is not available
             try:
                 f.resolve().relative_to(project_dir.resolve())
             except ValueError:
-                typer.echo(
-                    f"Error: File {f} is outside the project directory {project_dir}",
-                    err=True,
+                raise ValueError(
+                    f"File {f} is outside the project directory {project_dir}"
                 )
-                raise typer.Exit(code=2)
 
     configs = Config()
     configs.files = [str(f) for f in files]
@@ -169,9 +153,9 @@ def chunk_and_vectorise(
             collection = await get_collection(client, configs, True)
         except IndexError:
             print("Failed to get/create the collection. Please check your config.")
-            raise typer.Exit(code=1)
+            raise SystemExit(1)
         if not verify_ef(collection, configs):
-            raise typer.Exit(code=1)
+            raise SystemExit(1)
 
         stats = {"add": 0, "update": 0, "removed": 0}
         collection_lock = asyncio.Lock()
