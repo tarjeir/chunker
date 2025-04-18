@@ -88,6 +88,27 @@ If installed with pipx, you can run the CLI directly:
 chunker chunk-and-vectorise "*.py" --language python
 ```
 
+## Querying
+
+After vectorising your files, you can query your ChromaDB collection for relevant code chunks using the `vectorcode` CLI.
+
+To search for code chunks matching an expression and include chunk metadata (such as file path and line range), use:
+
+```sh
+vectorcode query "some expression" --include chunk
+```
+
+- `"some expression"`: The text or code you want to search for.
+- `--include chunk`: Ensures the output includes chunk metadata (file path, start, and end lines).
+
+**Example:**
+
+```sh
+vectorcode query "def my_function" --include chunk
+```
+
+This will return all code chunks containing `def my_function`, along with their file path and line range.
+
 ## Output
 
 Chunks are stored in your configured ChromaDB collection, with metadata including:
