@@ -298,7 +298,7 @@ Add the following to your Claude for Desktop configuration (or use the UI to add
 {
   "mcpServers": {
     "vectorcode": {
-      "command": "chunker",
+      "command": /<home DIR>/.local/bin/chunker",
       "args": [
         "vectorcode-mcp"
       ]
