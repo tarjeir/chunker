@@ -6,8 +6,13 @@ requires-python = ">=3.13"
 dependencies = [
     "typer>=0.15.2",
     "langchain-text-splitters",
-    "vectorcode>=0.5.6"
+    "vectorcode>=0.5.6",
 ]
 
 [project.scripts]
-chunker = "chunker.chunker:app"
+chunker = "chunker:app"
+
+[dependency-groups]
+dev = [
+    "pipx>=1.7.1",
+]
