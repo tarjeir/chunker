@@ -109,6 +109,12 @@ def chunk_and_vectorise(
     language: str = typer.Option(
         "python", help="Programming language for splitting (e.g., 'python')"
     ),
+    chroma_host: str = typer.Option(
+        None, help="ChromaDB host (overrides CHROMA_HOST env var)"
+    ),
+    chroma_port: int = typer.Option(
+        None, help="ChromaDB port (overrides CHROMA_PORT env var)"
+    ),
 ):
     # Check if pattern is missing or misused
     if pattern.startswith("--"):
@@ -156,6 +162,11 @@ def chunk_and_vectorise(
     configs = Config()
     configs.files = [str(f) for f in files]
     configs.project_root = str(project_dir.resolve())
+
+    if chroma_host is not None:
+        configs.chroma_host = chroma_host
+    if chroma_port is not None:
+        configs.chroma_port = chroma_port
 
     async def main():
         assert configs.project_root is not None
