@@ -1,0 +1,13 @@
+[project]
+name = "chunker"
+version = "0.1.0"
+description = "A CLI tool for chunking and vectorising code files"
+requires-python = ">=3.13"
+dependencies = [
+    "typer>=0.15.2",
+    "langchain-text-splitters",
+    "vectorcode>=0.5.6"
+]
+
+[project.scripts]
+chunker = "chunker.chunker:app"
