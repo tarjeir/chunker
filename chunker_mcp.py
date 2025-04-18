@@ -8,16 +8,18 @@ mcp = FastMCP("Chunker MCP")
 
 @mcp.tool()
 def chunk_and_vectorise(
+    project_dir: str,
     pattern: str,
     language: str = "python",
     ctx: Context = None,
 ) -> str:
     """
     Chunk and vectorise files matching the given pattern and language.
+    `project_dir` is the root directory of the project to search for files.
     """
     # Call the Typer CLI function directly
     try:
-        chunk_and_vectorise_cli(pattern, language)
+        chunk_and_vectorise_cli(Path(project_dir), pattern, language)
         return (
             f"Chunked and vectorised files matching: {pattern} (language: {language})"
         )

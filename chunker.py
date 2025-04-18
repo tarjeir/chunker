@@ -100,6 +100,9 @@ async def add_file_with_langchain(
 
 @app.command()
 def chunk_and_vectorise(
+    project_dir: Path = typer.Argument(
+        ..., help="Root directory of the project to search for files"
+    ),
     pattern: str = typer.Argument(
         ..., help="Glob pattern for files to process (e.g., '*.py')"
     ),
@@ -126,14 +129,19 @@ def chunk_and_vectorise(
         )
         raise typer.Exit(code=2)
 
-    files = list(Path(".").glob(pattern))
+    files = list(project_dir.glob(pattern))
     if not files:
         typer.echo(f"No files found matching pattern: {pattern}")
         raise typer.Exit(code=1)
 
+    for f in files:
+        if not Path(f).resolve().is_relative_to(project_dir.resolve()):
+            typer.echo(f"Error: File {f} is outside the project directory {project_dir}", err=True)
+            raise typer.Exit(code=2)
+
     configs = Config()
     configs.files = [str(f) for f in files]
-    configs.project_root = str(Path(".").resolve())
+    configs.project_root = str(project_dir.resolve())
 
     async def main():
         assert configs.project_root is not None
