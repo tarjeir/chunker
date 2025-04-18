@@ -3,7 +3,7 @@ from fastmcp import FastMCP, Context
 from chunker import chunk_and_vectorise as chunk_and_vectorise_cli
 import typer
 import os
-from fastmcp.prompts.base import UserMessage, AssistantMessage
+from fastmcp.prompts.prompt import UserMessage, AssistantMessage
 from pathlib import Path
 
 mcp = FastMCP("Chunker MCP")
@@ -11,8 +11,8 @@ mcp = FastMCP("Chunker MCP")
 
 @mcp.tool()
 def chunk_and_vectorise(
-    pattern: str = "",
-    language: str = "python",
+    pattern: str,
+    language: str,
     ctx: Context,
 ) -> str:
     """

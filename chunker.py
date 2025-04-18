@@ -185,7 +185,9 @@ def chunk_and_vectorise(
     asyncio.run(main())
 
 
-@app.command()
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
+)
 def chunk_and_vectorise_mcp(ctx: typer.Context):
     import sys
     import chunker_mcp
