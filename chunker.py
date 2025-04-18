@@ -61,7 +61,21 @@ async def add_file_with_langchain(
             logger.info(f"Created {len(chunks)} chunks for {full_path_str}")
             if len(chunks) == 0 or (len(chunks) == 1 and chunks[0] == ""):
                 return
-            metas = [{"path": full_path_str} for _ in chunks]
+
+            # Compute line ranges for each chunk
+            lines = code.splitlines()
+            metas = []
+            current_line = 0
+            for chunk in chunks:
+                chunk_lines = chunk.count('\n') + 1
+                start_line = current_line
+                end_line = current_line + chunk_lines - 1
+                metas.append({
+                    "path": full_path_str,
+                    "start": start_line,
+                    "end": end_line
+                })
+                current_line = end_line + 1
             async with collection_lock:
                 for idx in range(0, len(chunks), max_batch_size):
                     inserted_chunks = chunks[idx : idx + max_batch_size]
