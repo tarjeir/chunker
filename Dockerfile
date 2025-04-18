@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir uv
 
 # Copy project files
 COPY . /app
+COPY deployment/tests/testproject /app/deployment/tests/testproject
 
 # Install your project in editable mode using uv
 RUN uv pip install --system -e .

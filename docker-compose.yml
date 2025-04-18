@@ -12,7 +12,7 @@ services:
       - CHROMA_PORT=8000
     depends_on:
       - vectorcode_chromadb
-    command: ["python", "chunker.py", "--help"]
+    command: ["python", "chunker.py", "deployment/tests/testproject", "*.py", "--language", "python"]
 
   vectorcode_chromadb:
     image: chromadb/chroma:latest
