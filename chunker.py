@@ -198,3 +198,14 @@ def vectorcode_mcp(ctx: typer.Context):
 
 if __name__ == "__main__":
     app()
+
+
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
+)
+def vectorcode_lsp(ctx: typer.Context):
+    import sys
+    from vectorcode import lsp_main
+
+    sys.argv = [sys.argv[0]] + ctx.args
+    lsp_main.main()

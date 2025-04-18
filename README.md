@@ -123,6 +123,22 @@ All arguments after `vectorcode-mcp` are passed directly to the `vectorcode.mcp_
 python chunker.py vectorcode-mcp --help
 ```
 
+## Using the VectorCode LSP CLI Proxy
+
+You can access the `vectorcode` LSP (Language Server Protocol) CLI through this tool using the `vectorcode-lsp` command. This forwards all arguments to the underlying `vectorcode.lsp_main` command-line interface.
+
+**Example:**
+
+```sh
+python chunker.py vectorcode-lsp --option value
+```
+
+All arguments after `vectorcode-lsp` are passed directly to the `vectorcode.lsp_main` CLI. For example, to see available options:
+
+```sh
+python chunker.py vectorcode-lsp --help
+```
+
 ## Usage (Installed CLI)
 
 If you have installed this project using `pipx` or `pip install`, the `chunker` command will be available on your PATH.
@@ -152,6 +168,12 @@ You can also use the `vectorcode-mcp` subcommand in the same way:
 
 ```sh
 chunker vectorcode-mcp [options...]
+```
+
+You can also use the `vectorcode-lsp` subcommand in the same way:
+
+```sh
+chunker vectorcode-lsp [options...]
 ```
 
 If installed with pipx, you can run the CLI directly:
