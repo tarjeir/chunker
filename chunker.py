@@ -175,12 +175,12 @@ def chunk_and_vectorise(
 
 
 @app.command()
-def proxy():
+def proxy(*args: str):
     import sys
     from vectorcode import main
 
-    # Pass all args except the first (which is 'proxy') to vectorcode's CLI entrypoint
-    sys.argv = [sys.argv[0]] + sys.argv[2:]
+    # sys.argv[0] is the script name; build new argv as: [script, *args]
+    sys.argv = [sys.argv[0]] + list(args)
     main.main()
 
 
