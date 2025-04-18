@@ -17,7 +17,7 @@ for i in {1..30}; do
 done
 
 # Use chunker.py to proxy the query to vectorcode
-RESULT=$(python3 chunker.py vectorcode-cli query "$TEST_FILE" --include chunk --chroma-host "$CHROMA_HOST" --chroma-port "$CHROMA_PORT")
+RESULT=$(python3 chunker.py vectorcode-cli query "$TEST_FILE" --include chunk)
 
 # Check if the result contains the file path
 if echo "$RESULT" | grep -q "$PROJECT_ROOT/$TEST_FILE"; then
