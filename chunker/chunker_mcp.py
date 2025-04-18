@@ -3,6 +3,7 @@ from fastmcp import FastMCP, Context
 import os
 from fastmcp.prompts.prompt import UserMessage, AssistantMessage
 from pathlib import Path
+from chunker.core import chunk_and_vectorise_cli
 
 mcp = FastMCP("Chunker MCP")
 
