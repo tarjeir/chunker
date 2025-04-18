@@ -106,6 +106,21 @@ def chunk_and_vectorise(
         "python", help="Programming language for splitting (e.g., 'python')"
     ),
 ):
+    # Check if pattern is missing or misused
+    if pattern.startswith("--"):
+        typer.echo("Error: The first argument must be the file pattern (e.g., '*.py').", err=True)
+        raise typer.Exit(code=2)
+
+    # Validate language
+    from langchain_text_splitters import Language
+    if language.lower() not in [l.name.lower() for l in Language]:
+        typer.echo(
+            f"Error: '{language}' is not a supported language. "
+            f"Choose from: {', '.join(l.name.lower() for l in Language)}",
+            err=True
+        )
+        raise typer.Exit(code=2)
+
     files = list(Path(".").glob(pattern))
     if not files:
         typer.echo(f"No files found matching pattern: {pattern}")
