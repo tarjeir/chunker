@@ -10,8 +10,10 @@ from vectorcode.common import get_client, get_collection, verify_ef
 
 app = typer.Typer()
 
+
 def get_uuid() -> str:
     return uuid.uuid4().hex
+
 
 async def add_file_with_langchain(
     file_path: str,
@@ -68,6 +70,7 @@ async def add_file_with_langchain(
         async with stats_lock:
             stats["add"] += 1
 
+
 async def langchain_vectorise(configs: Config, language: str = "python") -> int:
     assert configs.project_root is not None
     client = await get_client(configs)
@@ -103,6 +106,7 @@ async def langchain_vectorise(configs: Config, language: str = "python") -> int:
 
     print(f"Added: {stats['add']}, Updated: {stats['update']}")
     return 0
+
 
 @app.command()
 def chunk_and_vectorise(
