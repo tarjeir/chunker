@@ -3,7 +3,7 @@ from fastmcp import FastMCP, Context
 import os
 from fastmcp.prompts.prompt import UserMessage, AssistantMessage
 from pathlib import Path
-from chunker.core import chunk_and_vectorise_cli
+from chunker.chunk_and_vectorise import chunk_and_vectorise_core
 
 mcp = FastMCP("Chunker MCP")
 
@@ -13,8 +13,6 @@ async def chunk_and_vectorise(
     pattern: str,
     language: str,
     ctx: Context,
-    chroma_host: str = None,
-    chroma_port: int = None,
 ) -> str:
     """
     Chunk and vectorise files matching the given pattern and language.
@@ -25,8 +23,12 @@ async def chunk_and_vectorise(
     if not project_dir:
         await ctx.log("error", "Error: project_dir must be specified.")
         return "Error: project_dir must be specified."
+
+    chroma_host = os.environ.get("CHROMA_HOST", None)
+    chroma_port = os.environ.get("CHROMA_PORT", None)
+    chroma_port = int(chroma_port) if chroma_port else None
     try:
-        chunk_and_vectorise_cli(
+        chunk_and_vectorise_core(
             Path(project_dir), pattern, language, chroma_host, chroma_port
         )
         await ctx.log(
@@ -126,9 +128,8 @@ def main():
     args, _ = parser.parse_known_args()
 
     os.environ["PROJECT_DIR"] = args.project_dir
-    os.environ["CHROMA_HOST"] = args.chroma_host or ""
-    os.environ["CHROMA_PORT"] = str(args.chroma_port) if args.chroma_port else ""
-
+    os.environ["CHROMA_HOST"] = args.chroma_host or "127.0.0.1"
+    os.environ["CHROMA_PORT"] = str(args.chroma_port) if args.chroma_port else "8000"
     mcp.run()
 
 
