@@ -6,7 +6,7 @@ requires-python = ">=3.13"
 dependencies = [
     "typer>=0.15.2",
     "langchain-text-splitters",
-    "vectorcode[mcp]>=0.5.6",
+    "vectorcode[lsp,mcp]>=0.5.6",
 ]
 
 [project.scripts]
