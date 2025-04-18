@@ -71,43 +71,6 @@ async def add_file_with_langchain(
             stats["add"] += 1
 
 
-async def langchain_vectorise(configs: Config, language: str = "python") -> int:
-    assert configs.project_root is not None
-    client = await get_client(configs)
-    try:
-        collection = await get_collection(client, configs, True)
-    except IndexError:
-        print("Failed to get/create the collection. Please check your config.")
-        return 1
-    if not verify_ef(collection, configs):
-        return 1
-
-    files = configs.files
-
-    stats = {"add": 0, "update": 0, "removed": 0}
-    collection_lock = asyncio.Lock()
-    stats_lock = asyncio.Lock()
-    max_batch_size = await client.get_max_batch_size()
-    semaphore = asyncio.Semaphore(os.cpu_count() or 1)
-
-    for file in files:
-        await add_file_with_langchain(
-            str(file),
-            collection,
-            collection_lock,
-            stats,
-            stats_lock,
-            configs,
-            max_batch_size,
-            semaphore,
-            language=language,
-        )
-        print(f"Processed {file}")
-
-    print(f"Added: {stats['add']}, Updated: {stats['update']}")
-    return 0
-
-
 @app.command()
 def chunk_and_vectorise(
     pattern: str = typer.Argument(
@@ -126,7 +89,40 @@ def chunk_and_vectorise(
     configs.files = [str(f) for f in files]
     configs.project_root = str(Path(".").resolve())
 
-    asyncio.run(langchain_vectorise(configs, language=language))
+    async def main():
+        assert configs.project_root is not None
+        client = await get_client(configs)
+        try:
+            collection = await get_collection(client, configs, True)
+        except IndexError:
+            print("Failed to get/create the collection. Please check your config.")
+            raise typer.Exit(code=1)
+        if not verify_ef(collection, configs):
+            raise typer.Exit(code=1)
+
+        stats = {"add": 0, "update": 0, "removed": 0}
+        collection_lock = asyncio.Lock()
+        stats_lock = asyncio.Lock()
+        max_batch_size = await client.get_max_batch_size()
+        semaphore = asyncio.Semaphore(os.cpu_count() or 1)
+
+        for file in configs.files:
+            await add_file_with_langchain(
+                str(file),
+                collection,
+                collection_lock,
+                stats,
+                stats_lock,
+                configs,
+                max_batch_size,
+                semaphore,
+                language=language,
+            )
+            print(f"Processed {file}")
+
+        print(f"Added: {stats['add']}, Updated: {stats['update']}")
+
+    asyncio.run(main())
 
 
 if __name__ == "__main__":
