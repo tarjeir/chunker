@@ -174,14 +174,26 @@ def chunk_and_vectorise(
     asyncio.run(main())
 
 
-@app.command(name="vectorcode-cli", context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
+)
 def vectorcode_cli(ctx: typer.Context):
     import sys
     from vectorcode import main
 
-    # All arguments after 'vectorcode-cli' are in ctx.args
     sys.argv = [sys.argv[0]] + ctx.args
     main.main()
+
+
+@app.command(
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
+)
+def vectorcode_mcp(ctx: typer.Context):
+    import sys
+    from vectorcode import mcp_main
+
+    sys.argv = [sys.argv[0]] + ctx.args
+    mcp_main.main()
 
 
 if __name__ == "__main__":
