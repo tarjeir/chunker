@@ -63,6 +63,31 @@ Example for JavaScript files:
 python chunker.py chunk-and-vectorise "src/**/*.js" --language javascript
 ```
 
+## Usage (Installed CLI)
+
+If you have installed this project using `pipx` or `pip install`, the `chunker` command will be available on your PATH.
+
+You can use it as follows:
+
+```sh
+chunker chunk-and-vectorise "<pattern>" --language <language>
+```
+
+- `<pattern>`: Glob pattern for files to process (e.g., `"*.py"`, `"src/**/*.js"`)
+- `--language <language>`: Programming language for splitting (default: `python`). Must be supported by LangChain's `Language` enum.
+
+**Examples:**
+
+Chunk all Python files in the current directory:
+```sh
+chunker chunk-and-vectorise "*.py"
+```
+
+Chunk all JavaScript files in a subdirectory:
+```sh
+chunker chunk-and-vectorise "src/**/*.js" --language javascript
+```
+
 If installed with pipx, you can run the CLI directly:
 
 ```sh
