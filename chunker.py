@@ -135,12 +135,23 @@ def chunk_and_vectorise(
         raise typer.Exit(code=1)
 
     for f in files:
-        if not Path(f).resolve().is_relative_to(project_dir.resolve()):
-            typer.echo(
-                f"Error: File {f} is outside the project directory {project_dir}",
-                err=True,
-            )
-            raise typer.Exit(code=2)
+        try:
+            if not Path(f).resolve().is_relative_to(project_dir.resolve()):
+                typer.echo(
+                    f"Error: File {f} is outside the project directory {project_dir}",
+                    err=True,
+                )
+                raise typer.Exit(code=2)
+        except AttributeError:
+            # For Python < 3.9, is_relative_to is not available
+            try:
+                f.resolve().relative_to(project_dir.resolve())
+            except ValueError:
+                typer.echo(
+                    f"Error: File {f} is outside the project directory {project_dir}",
+                    err=True,
+                )
+                raise typer.Exit(code=2)
 
     configs = Config()
     configs.files = [str(f) for f in files]
