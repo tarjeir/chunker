@@ -73,16 +73,17 @@ For more information, see the [ChromaDB Docker documentation](https://docs.trych
 ## Usage
 
 ```sh
-python chunker.py chunk-and-vectorise "*.py" --language python
+python chunker.py chunk-and-vectorise <project_dir> "<pattern>" --language <language>
 ```
 
-- `pattern`: Glob pattern for files to process (e.g., `"*.py"`, `"src/**/*.js"`)
-- `--language`: Programming language for splitting (default: `python`). Must be supported by LangChain's `Language` enum.
+- `<project_dir>`: Root directory of the project to search for files (e.g., `.` or `src`)
+- `<pattern>`: Glob pattern for files to process (e.g., `"*.py"`, `"src/**/*.js"`)
+- `--language <language>`: Programming language for splitting (default: `python`). Must be supported by LangChain's `Language` enum.
 
 Example for JavaScript files:
 
 ```sh
-python chunker.py chunk-and-vectorise "src/**/*.js" --language javascript
+python chunker.py chunk-and-vectorise src "src/**/*.js" --language javascript
 ```
 
 ## Using the VectorCode CLI Proxy
@@ -123,6 +124,19 @@ All arguments after `vectorcode-mcp` are passed directly to the `vectorcode.mcp_
 python chunker.py vectorcode-mcp --help
 ```
 
+## Using the Chunker MCP
+
+You can use the MCP (Multi-Collection Processor) interface for chunking and vectorising via `chunker_mcp.py`.  
+This requires you to specify the project directory with `--project_dir`.
+
+**Example:**
+
+```sh
+python chunker_mcp.py --project_dir .  # Add other MCP options as needed
+```
+
+When using the MCP tool, the `chunk_and_vectorise` tool will use the `PROJECT_DIR` environment variable set by the `--project_dir` argument.
+
 ## Using the VectorCode LSP CLI Proxy
 
 You can access the `vectorcode` LSP (Language Server Protocol) CLI through this tool using the `vectorcode-lsp` command. This forwards all arguments to the underlying `vectorcode.lsp_main` command-line interface.
@@ -146,9 +160,10 @@ If you have installed this project using `pipx` or `pip install`, the `chunker` 
 You can use it as follows:
 
 ```sh
-chunker chunk-and-vectorise "<pattern>" --language <language>
+chunker chunk-and-vectorise <project_dir> "<pattern>" --language <language>
 ```
 
+- `<project_dir>`: Root directory of the project to search for files (e.g., `.` or `src`)
 - `<pattern>`: Glob pattern for files to process (e.g., `"*.py"`, `"src/**/*.js"`)
 - `--language <language>`: Programming language for splitting (default: `python`). Must be supported by LangChain's `Language` enum.
 
@@ -156,12 +171,12 @@ chunker chunk-and-vectorise "<pattern>" --language <language>
 
 Chunk all Python files in the current directory:
 ```sh
-chunker chunk-and-vectorise "*.py"
+chunker chunk-and-vectorise . "*.py"
 ```
 
 Chunk all JavaScript files in a subdirectory:
 ```sh
-chunker chunk-and-vectorise "src/**/*.js" --language javascript
+chunker chunk-and-vectorise src "src/**/*.js" --language javascript
 ```
 
 You can also use the `vectorcode-mcp` subcommand in the same way:
