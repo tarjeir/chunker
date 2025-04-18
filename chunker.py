@@ -10,8 +10,7 @@ from vectorcode.common import get_client, get_collection, verify_ef
 import logging
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s"
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -67,26 +66,28 @@ async def add_file_with_langchain(
             metas = []
             current_line = 0
             for chunk in chunks:
-                chunk_lines = chunk.count('\n') + 1
+                chunk_lines = chunk.count("\n") + 1
                 start_line = current_line
                 end_line = current_line + chunk_lines - 1
-                metas.append({
-                    "path": full_path_str,
-                    "start": start_line,
-                    "end": end_line
-                })
+                metas.append(
+                    {"path": full_path_str, "start": start_line, "end": end_line}
+                )
                 current_line = end_line + 1
             async with collection_lock:
                 for idx in range(0, len(chunks), max_batch_size):
                     inserted_chunks = chunks[idx : idx + max_batch_size]
-                    logger.info(f"Adding {len(inserted_chunks)} chunks to collection for {full_path_str}")
+                    logger.info(
+                        f"Adding {len(inserted_chunks)} chunks to collection for {full_path_str}"
+                    )
                     await collection.add(
                         ids=[get_uuid() for _ in inserted_chunks],
                         documents=inserted_chunks,
                         metadatas=metas[idx : idx + max_batch_size],
                     )
     except UnicodeDecodeError:
-        logger.warning(f"UnicodeDecodeError: Skipping file {full_path_str} (probably binary)")
+        logger.warning(
+            f"UnicodeDecodeError: Skipping file {full_path_str} (probably binary)"
+        )
         return
 
     if num_existing_chunks:
@@ -108,16 +109,20 @@ def chunk_and_vectorise(
 ):
     # Check if pattern is missing or misused
     if pattern.startswith("--"):
-        typer.echo("Error: The first argument must be the file pattern (e.g., '*.py').", err=True)
+        typer.echo(
+            "Error: The first argument must be the file pattern (e.g., '*.py').",
+            err=True,
+        )
         raise typer.Exit(code=2)
 
     # Validate language
     from langchain_text_splitters import Language
+
     if language.lower() not in [l.name.lower() for l in Language]:
         typer.echo(
             f"Error: '{language}' is not a supported language. "
             f"Choose from: {', '.join(l.name.lower() for l in Language)}",
-            err=True
+            err=True,
         )
         raise typer.Exit(code=2)
 
@@ -162,7 +167,9 @@ def chunk_and_vectorise(
             )
             logger.info(f"Finished processing {file}")
 
-        logger.info(f"All files processed. Added: {stats['add']}, Updated: {stats['update']}")
+        logger.info(
+            f"All files processed. Added: {stats['add']}, Updated: {stats['update']}"
+        )
 
     asyncio.run(main())
 
@@ -170,10 +177,11 @@ def chunk_and_vectorise(
 @app.command()
 def proxy():
     import sys
-    import vectorcode
+    from vectorcode import main
+
     # Pass all args except the first (which is 'proxy') to vectorcode's CLI entrypoint
     sys.argv = [sys.argv[0]] + sys.argv[2:]
-    vectorcode.cli.main()
+    main.main()
 
 
 if __name__ == "__main__":
