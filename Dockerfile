@@ -23,4 +23,4 @@ COPY . /app
 RUN uv pip install --system -e .
 
 # Default command (change as needed)
-CMD ["chunker", "--help"]
+CMD ["python", "chunker.py", "--help"]
