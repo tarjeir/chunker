@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Install system dependencies (if needed)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential curl jq \
+    build-essential curl jq netcat-openbsd \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv (replace pipx)
