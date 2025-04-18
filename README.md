@@ -42,12 +42,6 @@ This tool chunks source code files using [LangChain's RecursiveCharacterTextSpli
    pipx install --editable .
    ```
 
-   Or, if you have a `pyproject.toml` and want to install from source:
-
-   ```sh
-   pipx install --editable path/to/your/project
-   ```
-
 ## Usage
 
 ```sh
