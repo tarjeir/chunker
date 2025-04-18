@@ -174,13 +174,13 @@ def chunk_and_vectorise(
     asyncio.run(main())
 
 
-@app.command()
-def proxy(*args: str):
+@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+def proxy(ctx: typer.Context):
     import sys
     from vectorcode import main
 
-    # sys.argv[0] is the script name; build new argv as: [script, *args]
-    sys.argv = [sys.argv[0]] + list(args)
+    # All arguments after 'proxy' are in ctx.args
+    sys.argv = [sys.argv[0]] + ctx.args
     main.main()
 
 
