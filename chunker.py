@@ -167,5 +167,14 @@ def chunk_and_vectorise(
     asyncio.run(main())
 
 
+@app.command()
+def proxy():
+    import sys
+    import vectorcode
+    # Pass all args except the first (which is 'proxy') to vectorcode's CLI entrypoint
+    sys.argv = [sys.argv[0]] + sys.argv[2:]
+    vectorcode.cli.main()
+
+
 if __name__ == "__main__":
     app()
