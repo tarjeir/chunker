@@ -7,6 +7,13 @@ import uuid
 from chromadb.api.types import IncludeEnum
 from vectorcode.cli_utils import Config, expand_path
 from vectorcode.common import get_client, get_collection, verify_ef
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 app = typer.Typer()
 
@@ -27,6 +34,7 @@ async def add_file_with_langchain(
     language: str = "python",
 ):
     full_path_str = str(expand_path(str(file_path), True))
+    logger.info(f"Processing file: {full_path_str}")
     async with collection_lock:
         num_existing_chunks = len(
             (
@@ -48,19 +56,23 @@ async def add_file_with_langchain(
             splitter = RecursiveCharacterTextSplitter.from_language(
                 getattr(Language, language.upper())
             )
+            logger.info(f"Chunking file {full_path_str} with language '{language}'")
             chunks = splitter.split_text(code)
+            logger.info(f"Created {len(chunks)} chunks for {full_path_str}")
             if len(chunks) == 0 or (len(chunks) == 1 and chunks[0] == ""):
                 return
             metas = [{"path": full_path_str} for _ in chunks]
             async with collection_lock:
                 for idx in range(0, len(chunks), max_batch_size):
                     inserted_chunks = chunks[idx : idx + max_batch_size]
+                    logger.info(f"Adding {len(inserted_chunks)} chunks to collection for {full_path_str}")
                     await collection.add(
                         ids=[get_uuid() for _ in inserted_chunks],
                         documents=inserted_chunks,
                         metadatas=metas[idx : idx + max_batch_size],
                     )
     except UnicodeDecodeError:
+        logger.warning(f"UnicodeDecodeError: Skipping file {full_path_str} (probably binary)")
         return
 
     if num_existing_chunks:
@@ -106,6 +118,7 @@ def chunk_and_vectorise(
         max_batch_size = await client.get_max_batch_size()
         semaphore = asyncio.Semaphore(os.cpu_count() or 1)
 
+        logger.info(f"Starting vectorisation for {len(configs.files)} files.")
         for file in configs.files:
             await add_file_with_langchain(
                 str(file),
@@ -118,9 +131,9 @@ def chunk_and_vectorise(
                 semaphore,
                 language=language,
             )
-            print(f"Processed {file}")
+            logger.info(f"Finished processing {file}")
 
-        print(f"Added: {stats['add']}, Updated: {stats['update']}")
+        logger.info(f"All files processed. Added: {stats['add']}, Updated: {stats['update']}")
 
     asyncio.run(main())
 
