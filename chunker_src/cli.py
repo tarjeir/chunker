@@ -1,3 +1,4 @@
+import asyncio
 import typer
 from pathlib import Path
 import logging
@@ -26,12 +27,14 @@ def chunk_and_vectorise(
     chroma_port: int = typer.Option(None, help="ChromaDB port "),
 ):
     try:
-        chunk_and_vectorise_core(
-            project_dir=project_dir,
-            pattern=pattern,
-            language=language,
-            chroma_host=chroma_host,
-            chroma_port=chroma_port,
+        asyncio.run(
+            chunk_and_vectorise_core(
+                project_dir=project_dir,
+                pattern=pattern,
+                language=language,
+                chroma_host=chroma_host,
+                chroma_port=chroma_port,
+            )
         )
     except ValueError as e:
         typer.echo(f"Error: {e}", err=True)

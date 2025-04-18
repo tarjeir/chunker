@@ -95,7 +95,7 @@ async def add_file_with_langchain(
             stats["add"] += 1
 
 
-def chunk_and_vectorise_core(
+async def chunk_and_vectorise_core(
     project_dir: Path,
     pattern: str,
     language: str,
@@ -177,4 +177,4 @@ def chunk_and_vectorise_core(
             f"All files processed. Added: {stats['add']}, Updated: {stats['update']}"
         )
 
-    asyncio.run(main())
+    await main()
