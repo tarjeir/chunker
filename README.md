@@ -12,11 +12,41 @@ This tool chunks source code files using [LangChain's RecursiveCharacterTextSpli
 
 ## Installation
 
-1. Clone this repository.
-2. Install dependencies (example using pip):
+### Using [uv](https://github.com/astral-sh/uv)
+
+1. Install [uv](https://github.com/astral-sh/uv) if you don't have it:
 
    ```sh
-   pip install -r requirements.txt
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+
+2. Create a virtual environment and install dependencies:
+
+   ```sh
+   uv venv .venv
+   source .venv/bin/activate
+   uv pip install -r requirements.txt
+   ```
+
+### Using [pipx](https://pypa.github.io/pipx/)
+
+1. Install [pipx](https://pypa.github.io/pipx/):
+
+   ```sh
+   python3 -m pip install --user pipx
+   python3 -m pipx ensurepath
+   ```
+
+2. Install this project (from a local directory):
+
+   ```sh
+   pipx install --editable .
+   ```
+
+   Or, if you have a `pyproject.toml` and want to install from source:
+
+   ```sh
+   pipx install --editable path/to/your/project
    ```
 
    Make sure you have the following packages (and their dependencies) installed:
@@ -39,6 +69,12 @@ Example for JavaScript files:
 
 ```sh
 python chunker.py chunk-and-vectorise "src/**/*.js" --language javascript
+```
+
+If installed with pipx, you can run the CLI directly:
+
+```sh
+chunker chunk-and-vectorise "*.py" --language python
 ```
 
 ## Output
