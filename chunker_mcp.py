@@ -5,6 +5,7 @@ from fastmcp.prompts.base import UserMessage, AssistantMessage
 
 mcp = FastMCP("Chunker MCP")
 
+
 @mcp.tool()
 def chunk_and_vectorise(
     pattern: str,
@@ -17,9 +18,12 @@ def chunk_and_vectorise(
     # Call the Typer CLI function directly
     try:
         chunk_and_vectorise_cli(pattern, language)
-        return f"Chunked and vectorised files matching: {pattern} (language: {language})"
+        return (
+            f"Chunked and vectorised files matching: {pattern} (language: {language})"
+        )
     except typer.Exit as e:
         return f"Error: {e}"
+
 
 @mcp.prompt()
 def pattern_help() -> str:
@@ -35,6 +39,7 @@ def pattern_help() -> str:
         "You can use any valid Unix-style glob pattern."
     )
 
+
 @mcp.prompt()
 def example_patterns() -> list:
     """
@@ -42,15 +47,23 @@ def example_patterns() -> list:
     """
     return [
         UserMessage("How do I select all Python files in my project?"),
-        AssistantMessage("Use the pattern '**/*.py' to match all Python files recursively."),
+        AssistantMessage(
+            "Use the pattern '**/*.py' to match all Python files recursively."
+        ),
         UserMessage("How do I select only files in the current directory?"),
-        AssistantMessage("Use '*.py' to match all Python files in the current directory only."),
+        AssistantMessage(
+            "Use '*.py' to match all Python files in the current directory only."
+        ),
         UserMessage("How do I select all Markdown files in a docs folder?"),
-        AssistantMessage("Use 'docs/**/*.md' to match all Markdown files under the docs directory."),
+        AssistantMessage(
+            "Use 'docs/**/*.md' to match all Markdown files under the docs directory."
+        ),
     ]
+
 
 def main():
     mcp.run()
+
 
 if __name__ == "__main__":
     main()
