@@ -85,6 +85,28 @@ Example for JavaScript files:
 python chunker.py chunk-and-vectorise "src/**/*.js" --language javascript
 ```
 
+## Using the VectorCode CLI Proxy
+
+You can access the full `vectorcode` CLI through this tool using the `vectorcode-cli` command. This forwards all arguments to the underlying `vectorcode` command-line interface.
+
+**Example:**
+
+```sh
+python chunker.py vectorcode-cli query "this is a query"
+```
+
+All arguments after `vectorcode-cli` are passed directly to `vectorcode`. For example, to check the version:
+
+```sh
+python chunker.py vectorcode-cli version
+```
+
+Or to run any other `vectorcode` subcommand:
+
+```sh
+python chunker.py vectorcode-cli <subcommand> [options...]
+```
+
 ## Usage (Installed CLI)
 
 If you have installed this project using `pipx` or `pip install`, the `chunker` command will be available on your PATH.

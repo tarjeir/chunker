@@ -174,12 +174,12 @@ def chunk_and_vectorise(
     asyncio.run(main())
 
 
-@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
-def proxy(ctx: typer.Context):
+@app.command(name="vectorcode-cli", context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+def vectorcode_cli(ctx: typer.Context):
     import sys
     from vectorcode import main
 
-    # All arguments after 'proxy' are in ctx.args
+    # All arguments after 'vectorcode-cli' are in ctx.args
     sys.argv = [sys.argv[0]] + ctx.args
     main.main()
 
