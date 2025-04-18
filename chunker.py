@@ -208,4 +208,5 @@ def vectorcode_lsp(ctx: typer.Context):
 
 
 if __name__ == "__main__":
-    app()
+    from chunker_mcp import main
+    main()
