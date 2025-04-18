@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir uv
 COPY . /app
 
 # Install your project in editable mode using uv
-RUN uv pip install -e .
+RUN uv pip install --system -e .
 
 # Default command (change as needed)
 CMD ["chunker", "--help"]
