@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  chunker:
+    build: .
+    image: vectorcode-chunker:latest
+    container_name: vectorcode-chunker
+    volumes:
+      - .:/app
+    environment:
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    depends_on:
+      - chromadb
+    command: ["python", "chunker.py", "--help"]
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma-data:/chroma/.chroma
+
+volumes:
+  chroma-data:
