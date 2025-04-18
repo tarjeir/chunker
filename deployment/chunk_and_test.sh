@@ -28,7 +28,7 @@ python3 chunker.py chunk-and-vectorise \
 
 # Run test/query
 echo "Testing if file was chunked..."
-RESULT=$(python3 chunker.py vectorcode-cli query "$TEST_FILE" --include chunk --chroma-host "$CHROMA_HOST" --chroma-port "$CHROMA_PORT")
+RESULT=$(python3 chunker.py vectorcode-cli query "$TEST_FILE" --include chunk)
 
 if echo "$RESULT" | grep -q "$PROJECT_ROOT/$TEST_FILE"; then
   echo "SUCCESS: Found chunks for $PROJECT_ROOT/$TEST_FILE"
