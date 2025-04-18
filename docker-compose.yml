@@ -7,13 +7,15 @@ services:
     container_name: vectorcode_chunker
     volumes:
       - .:/app
-    environment:
-      - CHROMA_HOST=vectorcode_chromadb
-      - CHROMA_PORT=8000
     depends_on:
       - vectorcode_chromadb
-    entrypoint: ["tail", "-f", "/dev/null"]
-    # command: ["python", "chunker.py", "chunk-and-vectorise", "deployment/tests/testproject", "*.py", "--language", "python"]
+    command: [
+      "python", "chunker.py", "chunk-and-vectorise",
+      "deployment/tests/testproject", "*.py",
+      "--language", "python",
+      "--chroma-host", "vectorcode_chromadb",
+      "--chroma-port", "8000"
+    ]
 
   vectorcode_chromadb:
     image: chromadb/chroma:latest
