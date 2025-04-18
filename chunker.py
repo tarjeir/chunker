@@ -136,7 +136,10 @@ def chunk_and_vectorise(
 
     for f in files:
         if not Path(f).resolve().is_relative_to(project_dir.resolve()):
-            typer.echo(f"Error: File {f} is outside the project directory {project_dir}", err=True)
+            typer.echo(
+                f"Error: File {f} is outside the project directory {project_dir}",
+                err=True,
+            )
             raise typer.Exit(code=2)
 
     configs = Config()
@@ -183,8 +186,11 @@ def chunk_and_vectorise(
 
 
 @app.command()
-def chunk_and_vectorise_mcp():
+def chunk_and_vectorise_mcp(ctx: typer.Context):
+    import sys
     import chunker_mcp
+
+    sys.argv = [sys.argv[0]] + ctx.args
 
     chunker_mcp.main()
 

@@ -2,6 +2,7 @@ import argparse
 from fastmcp import FastMCP, Context
 from chunker import chunk_and_vectorise as chunk_and_vectorise_cli
 import typer
+import os
 from fastmcp.prompts.base import UserMessage, AssistantMessage
 from pathlib import Path
 
@@ -10,21 +11,17 @@ mcp = FastMCP("Chunker MCP")
 
 @mcp.tool()
 def chunk_and_vectorise(
-    project_dir: str = None,
     pattern: str = "",
     language: str = "python",
-    ctx: Context = None,
+    ctx: Context,
 ) -> str:
     """
     Chunk and vectorise files matching the given pattern and language.
     `project_dir` is the root directory of the project to search for files.
     """
-    if project_dir is None:
-        import os
-        project_dir = os.environ.get("PROJECT_DIR")
-        if not project_dir:
-            return "Error: project_dir must be specified."
-    # Call the Typer CLI function directly
+    project_dir = os.environ.get("PROJECT_DIR")
+    if not project_dir:
+        return "Error: project_dir must be specified."
     try:
         chunk_and_vectorise_cli(Path(project_dir), pattern, language)
         return (
@@ -32,7 +29,6 @@ def chunk_and_vectorise(
         )
     except typer.Exit as e:
         return f"Error: {e}"
-
 
 
 @mcp.prompt()
@@ -112,10 +108,8 @@ def language_help() -> str:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project_dir", type=str, required=True)
-    args, unknown = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
 
-    # Optionally, you can pass project_dir to the MCP context or environment if needed
-    import os
     os.environ["PROJECT_DIR"] = args.project_dir
 
     mcp.run()
