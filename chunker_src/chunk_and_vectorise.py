@@ -4,8 +4,8 @@ import uuid
 from pathlib import Path
 from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
 from chromadb.api.types import IncludeEnum
-from vectorcode.cli_utils import Config, expand_path
-from vectorcode.common import get_client, get_collection, verify_ef
+from vectorcode.cli_utils import expand_path
+import chromadb
 import logging
 
 logging.basicConfig(
@@ -24,25 +24,38 @@ async def add_file_with_langchain(
     collection_lock,
     stats: dict[str, int],
     stats_lock,
-    configs: Config,
     max_batch_size: int,
     semaphore: asyncio.Semaphore,
     language: str = "python",
 ):
+    """
+    Add a file's contents to a ChromaDB collection, chunked and with metadata.
+
+    Args:
+        file_path (str): Path to the file to process.
+        collection: The ChromaDB collection object.
+        collection_lock: Asyncio lock for collection operations.
+        stats (dict[str, int]): Dictionary to track add/update stats.
+        stats_lock: Asyncio lock for stats.
+        max_batch_size (int): Maximum batch size for collection.add().
+        semaphore (asyncio.Semaphore): Semaphore to limit concurrency.
+        language (str): Programming language for chunking.
+
+    Returns:
+        None
+    """
     full_path_str = str(expand_path(str(file_path), True))
     logger.info(f"Processing file: {full_path_str}")
-    async with collection_lock:
-        num_existing_chunks = len(
-            (
-                await collection.get(
-                    where={"path": full_path_str},
-                    include=[IncludeEnum.metadatas],
-                )
-            )["ids"]
-        )
 
-    if num_existing_chunks:
-        async with collection_lock:
+    # Check for existing chunks and delete if present
+    async with collection_lock:
+        existing = await collection.get(
+            where={"path": full_path_str},
+            include=["metadatas"],
+        )
+        num_existing_chunks = len(existing["ids"]) if "ids" in existing else 0
+
+        if num_existing_chunks:
             await collection.delete(where={"path": full_path_str})
 
     try:
@@ -70,6 +83,7 @@ async def add_file_with_langchain(
                     {"path": full_path_str, "start": start_line, "end": end_line}
                 )
                 current_line = end_line + 1
+
             async with collection_lock:
                 for idx in range(0, len(chunks), max_batch_size):
                     inserted_chunks = chunks[idx : idx + max_batch_size]
@@ -132,49 +146,40 @@ async def chunk_and_vectorise_core(
                     f"File {f} is outside the project directory {project_dir}"
                 )
 
-    configs = Config()
-    configs.files = [str(f) for f in files]
-    configs.project_root = str(project_dir.resolve())
+    # Setup Chroma async HTTP client
+    host = chroma_host or "localhost"
+    port = chroma_port or 8000
+    client = await chromadb.AsyncHttpClient(host=host, port=port)
 
-    if chroma_host is not None:
-        configs.host = chroma_host
-    if chroma_port is not None:
-        configs.port = chroma_port
+    # Get or create collection
+    collection_name = "default"
+    try:
+        collection = await client.get_or_create_collection(collection_name)
+    except Exception as e:
+        logger.error(f"Failed to get/create the collection: {e}")
+        raise SystemExit(1)
 
-    async def main():
-        assert configs.project_root is not None
-        client = await get_client(configs)
-        try:
-            collection = await get_collection(client, configs, True)
-        except IndexError:
-            print("Failed to get/create the collection. Please check your config.")
-            raise SystemExit(1)
-        if not verify_ef(collection, configs):
-            raise SystemExit(1)
+    stats = {"add": 0, "update": 0, "removed": 0}
+    collection_lock = asyncio.Lock()
+    stats_lock = asyncio.Lock()
+    # Chroma's HTTP client does not expose get_max_batch_size, so use a reasonable default
+    max_batch_size = 64
+    semaphore = asyncio.Semaphore(os.cpu_count() or 1)
 
-        stats = {"add": 0, "update": 0, "removed": 0}
-        collection_lock = asyncio.Lock()
-        stats_lock = asyncio.Lock()
-        max_batch_size = await client.get_max_batch_size()
-        semaphore = asyncio.Semaphore(os.cpu_count() or 1)
-
-        logger.info(f"Starting vectorisation for {len(configs.files)} files.")
-        for file in configs.files:
-            await add_file_with_langchain(
-                str(file),
-                collection,
-                collection_lock,
-                stats,
-                stats_lock,
-                configs,
-                max_batch_size,
-                semaphore,
-                language=language,
-            )
-            logger.info(f"Finished processing {file}")
-
-        logger.info(
-            f"All files processed. Added: {stats['add']}, Updated: {stats['update']}"
+    logger.info(f"Starting vectorisation for {len(files)} files.")
+    for file in files:
+        await add_file_with_langchain(
+            str(file),
+            collection,
+            collection_lock,
+            stats,
+            stats_lock,
+            max_batch_size,
+            semaphore,
+            language=language,
         )
+        logger.info(f"Finished processing {file}")
 
-    await main()
+    logger.info(
+        f"All files processed. Added: {stats['add']}, Updated: {stats['update']}"
+    )
