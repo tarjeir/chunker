@@ -3,6 +3,7 @@ import logging
 import os
 import uuid
 from pathlib import Path
+from chromadb.api.models.AsyncCollection import AsyncCollection
 from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
 import chromadb
 from typing import Union
@@ -165,7 +166,7 @@ async def _update_stats(stats: dict[str, int], stats_lock, key: str):
 async def add_file_with_langchain(
     file_path: str,
     logger: logging.Logger,
-    collection: object,
+    collection: AsyncCollection,
     collection_lock: asyncio.Lock,
     stats: dict[str, int],
     stats_lock: asyncio.Lock,
