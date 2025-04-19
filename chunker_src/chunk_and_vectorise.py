@@ -8,6 +8,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
 import chromadb
 from typing import Union
 from chunker_src import model as chunker_model
+import pathspec
 
 PathLike = Union[str, Path]
 
@@ -231,6 +232,36 @@ async def add_file_with_langchain(
         await _update_stats(stats, stats_lock, "add")
 
 
+def _filter_files_with_gitignore(files: list[Path], project_dir: Path) -> list[Path]:
+    """
+    Filter out files ignored by .gitignore in the project directory.
+
+    Args:
+        files (list[Path]): List of file paths to filter.
+        project_dir (Path): The root directory of the project.
+
+    Returns:
+        list[Path]: Filtered list of files not ignored by .gitignore.
+    """
+    gitignore_path = project_dir / ".gitignore"
+    if not gitignore_path.exists():
+        return files
+
+    with open(gitignore_path, "r", encoding="utf-8") as f:
+        gitignore_patterns = f.read().splitlines()
+    spec = pathspec.PathSpec.from_lines("gitwildmatch", gitignore_patterns)
+
+    filtered_files = []
+    for f in files:
+        try:
+            rel_path = str(f.relative_to(project_dir))
+        except ValueError:
+            continue
+        if not spec.match_file(rel_path):
+            filtered_files.append(f)
+    return filtered_files
+
+
 async def chunk_and_vectorise_core(
     project_dir: Path,
     pattern: str,
@@ -264,6 +295,7 @@ async def chunk_and_vectorise_core(
         )
 
     files = list(project_dir.glob(pattern))
+    files = _filter_files_with_gitignore(files, project_dir)
     if not files:
         raise FileNotFoundError(f"No files found matching pattern: {pattern}")
 
