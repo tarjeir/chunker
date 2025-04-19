@@ -240,9 +240,13 @@ def language_help() -> str:
 
 
 import sys
+from typing import Any, Literal
 
 
-def main() -> None:
+def main(
+    transport: Literal["stdio", "sse"] | None = None,
+    **transport_kwargs: Any,
+) -> None:
     """
     Entry point for the Chunker MCP CLI. Ensures all required configuration
     arguments are provided and non-empty before starting the MCP server.
@@ -276,4 +280,4 @@ def main() -> None:
     os.environ["CHROMA_HOST"] = args.chroma_host
     os.environ["CHROMA_PORT"] = str(args.chroma_port)
     os.environ["CHROMA_COLLECTION_NAME"] = args.chroma_collection_name
-    mcp.run()
+    mcp.run(transport=transport, **transport_kwargs)
