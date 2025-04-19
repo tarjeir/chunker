@@ -24,7 +24,7 @@ async def chunk_and_vectorise(
     project_dir = os.environ.get("PROJECT_DIR")
     chroma_host = os.environ.get("CHROMA_HOST")
     chroma_port = os.environ.get("CHROMA_PORT")
-    collection_name = os.environ.get("CHROMA_COLLECTION_NAME", "default")
+    collection_name = os.environ.get("CHROMA_COLLECTION_NAME")
     max_batch_size = os.environ.get("CHROMA_MAX_BATCH_SIZE", "64")
 
     if not project_dir:
@@ -36,6 +36,9 @@ async def chunk_and_vectorise(
     if not chroma_port:
         await ctx.log("error", "Error: chroma_port must be specified.")
         return "Error: chroma_port must be specified."
+    if not collection_name:
+        await ctx.log("error", "Error: chroma_collection_name must be specified.")
+        return "Error: chroma_collection_name must be specified."
 
     try:
         chroma_port_int = int(chroma_port)
@@ -172,6 +175,7 @@ def main() -> None:
     parser.add_argument("--project_dir", type=str, required=True)
     parser.add_argument("--chroma_host", type=str, required=True)
     parser.add_argument("--chroma_port", type=int, required=True)
+    parser.add_argument("--chroma_collection_name", type=str, required=True)
     args, _ = parser.parse_known_args()
 
     missing = []
@@ -181,6 +185,8 @@ def main() -> None:
         missing.append("--chroma_host")
     if args.chroma_port is None or str(args.chroma_port).strip() == "":
         missing.append("--chroma_port")
+    if not args.chroma_collection_name or not args.chroma_collection_name.strip():
+        missing.append("--chroma_collection_name")
 
     if missing:
         sys.stderr.write(
@@ -191,4 +197,5 @@ def main() -> None:
     os.environ["PROJECT_DIR"] = args.project_dir
     os.environ["CHROMA_HOST"] = args.chroma_host
     os.environ["CHROMA_PORT"] = str(args.chroma_port)
+    os.environ["CHROMA_COLLECTION_NAME"] = args.chroma_collection_name
     mcp.run()
