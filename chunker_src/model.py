@@ -12,11 +12,11 @@ class ChunkAndVectoriseConfig:
         max_batch_size (int): Maximum batch size for collection.add().
         language (str): Programming language for chunking.
     """
-    chroma_host: str = "localhost"
-    chroma_port: int = 8000
-    collection_name: str = "default"
-    max_batch_size: int = 64
-    language: str = "python"
+    chroma_host: str
+    chroma_port: int
+    collection_name: str
+    max_batch_size: int
+    language: str
 
 
 @dataclass
