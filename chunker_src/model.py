@@ -28,13 +28,11 @@ class QueryChunksConfig:
         chroma_host (str): Hostname for the ChromaDB server.
         chroma_port (int): Port for the ChromaDB server.
         collection_name (str): Name of the ChromaDB collection.
-        language (str): Programming language for filtering/querying.
         n_results (int): Number of results to return from the query.
     """
     chroma_host: str
     chroma_port: int
     collection_name: str
-    language: str
     n_results: int = 10
 
 
