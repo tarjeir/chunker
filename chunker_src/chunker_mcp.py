@@ -112,8 +112,7 @@ async def query_chunks(
     chroma_host = os.environ.get("CHROMA_HOST")
     chroma_port = os.environ.get("CHROMA_PORT")
     collection_name = os.environ.get("CHROMA_COLLECTION_NAME")
-    max_batch_size = os.environ.get("CHROMA_MAX_BATCH_SIZE", "64")
-    language = os.environ.get("LANGUAGE", "python")
+    n_results = os.environ.get("CHROMA_N_RESULTS", "10")
 
     if not chroma_host:
         await ctx.log("error", "Error: chroma_host must be specified.")
@@ -133,18 +132,17 @@ async def query_chunks(
         return msg
 
     try:
-        max_batch_size_int = int(max_batch_size)
+        n_results_int = int(n_results)
     except Exception:
-        msg = f"Error: CHROMA_MAX_BATCH_SIZE must be an integer, got {max_batch_size!r}"
+        msg = f"Error: CHROMA_N_RESULTS must be an integer, got {n_results!r}"
         await ctx.log("error", msg)
         return msg
 
-    config = chunker_model.ChunkAndVectoriseConfig(
+    config = chunker_model.QueryChunksConfig(
         chroma_host=chroma_host,
         chroma_port=chroma_port_int,
         collection_name=collection_name,
-        max_batch_size=max_batch_size_int,
-        language=language,
+        n_results=n_results_int,
     )
 
     logger = logging.getLogger(__name__)
@@ -154,6 +152,7 @@ async def query_chunks(
             query_text=query,
             config=config,
             logger=logger,
+            n_results=n_results_int,
         )
         summary = f"Found {len(result.chunks)} chunks.\n" + "\n".join(
             f"{i+1}. {path}" for i, path in enumerate(result.paths)
