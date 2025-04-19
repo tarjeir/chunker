@@ -18,6 +18,7 @@ chunker = "chunker_src:app"
 [dependency-groups]
 dev = [
     "pipx>=1.7.1",
+    "pytest>=8.3.5",
 ]
 
 [tool.setuptools.packages.find]

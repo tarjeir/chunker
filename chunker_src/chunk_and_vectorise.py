@@ -1,4 +1,5 @@
 import asyncio
+import pathspec
 import logging
 import os
 import uuid
@@ -12,7 +13,7 @@ from chunker_src import model as chunker_model
 PathLike = Union[str, Path]
 
 
-def validate_glob_pattern(pattern: str) -> Union[None, ValueError]:
+def _validate_glob_pattern(pattern: str) -> Union[None, ValueError]:
     """
     Validate the glob pattern to prevent overly broad or unsafe file matches.
 
@@ -328,7 +329,7 @@ async def chunk_and_vectorise_core(
             message="The first argument must be the file pattern (e.g., '*.py')."
         )
 
-    validation_error = validate_glob_pattern(pattern)
+    validation_error = _validate_glob_pattern(pattern)
     if validation_error:
         return chunker_model.InvalidPatternError(message=str(validation_error))
 
