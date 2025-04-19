@@ -4,6 +4,7 @@ import os
 from fastmcp.prompts.prompt import UserMessage, AssistantMessage
 from pathlib import Path
 from chunker_src.chunk_and_vectorise import chunk_and_vectorise_core
+from chunker_src.query_chunks import query_chunks_core
 import logging
 from chunker_src import model as chunker_model
 
