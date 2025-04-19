@@ -17,11 +17,6 @@ mcp = FastMCP("Chunker MCP")
 
 @mcp.tool(
     description="Chunk and vectorise files matching the given pattern and language.",
-    parameters={
-        "pattern": str,
-        "language": str,
-        "ctx": Context,
-    },
 )
 async def chunk_and_vectorise(
     pattern: str,
@@ -103,10 +98,6 @@ async def chunk_and_vectorise(
 
 @mcp.tool(
     description="Query chunks from the ChromaDB collection using the provided query string.",
-    parameters={
-        "query": str,
-        "ctx": Context,
-    },
 )
 async def query_chunks(
     query: str,
@@ -187,9 +178,6 @@ async def query_chunks(
 
 @mcp.tool(
     description="Delete all records in the specified ChromaDB collection.",
-    parameters={
-        "ctx": Context,
-    },
 )
 async def delete_collection(
     ctx: Context,
