@@ -12,6 +12,10 @@ async def query_chunks_core(
     """
     Query chunks from a ChromaDB collection and return their texts and file paths.
 
+    The ChromaDB collection.query method returns a TypedDict with fields:
+    ids, embeddings, documents, uris, data, metadatas, distances, included.
+    This function extracts chunk texts and file paths from the nested structure.
+
     Args:
         query_text (str): The text to query for.
         config (chunker_model.ChunkAndVectoriseConfig): Configuration object.
@@ -47,9 +51,23 @@ async def query_chunks_core(
 
     chunks = []
     paths = []
-    if results and "documents" in results and "metadatas" in results:
-        for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
+    # ChromaDB returns: documents: Optional[List[List[Document]]], metadatas: Optional[List[List[Metadata]]]
+    documents = results.get("documents")
+    metadatas = results.get("metadatas")
+    if (
+        documents
+        and isinstance(documents, list)
+        and len(documents) > 0
+        and isinstance(documents[0], list)
+        and metadatas
+        and isinstance(metadatas, list)
+        and len(metadatas) > 0
+        and isinstance(metadatas[0], list)
+    ):
+        for doc, meta in zip(documents[0], metadatas[0]):
             chunks.append(doc)
-            paths.append(meta.get("path", ""))
+            paths.append(meta.get("path", "") if isinstance(meta, dict) else "")
+    else:
+        logger.warning("QueryResult missing or malformed: no documents or metadatas found.")
 
     return chunker_model.QueryResult(chunks=chunks, paths=paths)
