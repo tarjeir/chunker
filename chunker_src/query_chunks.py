@@ -6,6 +6,7 @@ async def query_chunks_core(
     query_text: str,
     config: chunker_model.ChunkAndVectoriseConfig,
     logger: logging.Logger,
+    n_results: int = 10,
 ) -> chunker_model.QueryResult:
     """
     Query chunks from a ChromaDB collection and return their texts and file paths.
@@ -14,10 +15,15 @@ async def query_chunks_core(
         query_text (str): The text to query for.
         config (chunker_model.ChunkAndVectoriseConfig): Configuration object.
         logger (logging.Logger): Logger instance.
+        n_results (int): Number of results to return from the query (default: 10).
 
     Returns:
         chunker_model.QueryResult: The result containing chunk texts and file paths.
     """
+    if n_results < 1:
+        logger.warning("n_results < 1; setting n_results to 1.")
+        n_results = 1
+
     try:
         client = await chromadb.AsyncHttpClient(
             host=config.chroma_host,
@@ -31,7 +37,7 @@ async def query_chunks_core(
     try:
         results = await collection.query(
             query_texts=[query_text],
-            n_results=10,
+            n_results=n_results,
             include=["documents", "metadatas"],
         )
     except Exception as e:
