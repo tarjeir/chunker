@@ -20,7 +20,7 @@ done
 
 # Run chunking
 echo "Running chunking..."
-chunker chunk_and_vectorise \
+chunker chunk-and-vectorise \
   "$PROJECT_ROOT" "$PATTERN" \
   --language "$LANGUAGE" \
   --chroma-host "$CHROMA_HOST" \
@@ -30,7 +30,7 @@ chunker chunk_and_vectorise \
 
 # Run test/query
 echo "Testing if file was chunked..."
-RESULT=$(chunker query_chunks \
+RESULT=$(chunker query-chunks \
   "$TEST_FILE" \
   --chroma-host "$CHROMA_HOST" \
   --chroma-port "$CHROMA_PORT" \
