@@ -133,18 +133,27 @@ async def add_file_with_langchain(
 async def chunk_and_vectorise_core(
     project_dir: Path,
     pattern: str,
-    language: str,
-    chroma_host: str | None,
-    chroma_port: int | None,
+    config: ChunkAndVectoriseConfig,
 ):
+    """
+    Core logic for chunking and vectorising files in a project directory.
+
+    Args:
+        project_dir (Path): The root directory of the project.
+        pattern (str): Glob pattern for files to process.
+        config (ChunkAndVectoriseConfig): Configuration object for chunking and vectorising.
+
+    Returns:
+        None
+    """
     # Check if pattern is missing or misused
     if pattern.startswith("--"):
         raise ValueError("The first argument must be the file pattern (e.g., '*.py').")
 
     # Validate language
-    if language.lower() not in [l.name.lower() for l in Language]:
+    if config.language.lower() not in [l.name.lower() for l in Language]:
         raise ValueError(
-            f"'{language}' is not a supported language. "
+            f"'{config.language}' is not a supported language. "
             f"Choose from: {', '.join(l.name.lower() for l in Language)}"
         )
 
@@ -168,14 +177,14 @@ async def chunk_and_vectorise_core(
                 )
 
     # Setup Chroma async HTTP client
-    host = chroma_host or "localhost"
-    port = chroma_port or 8000
-    client = await chromadb.AsyncHttpClient(host=host, port=port)
+    client = await chromadb.AsyncHttpClient(
+        host=config.chroma_host,
+        port=config.chroma_port,
+    )
 
     # Get or create collection
-    collection_name = "default"
     try:
-        collection = await client.get_or_create_collection(collection_name)
+        collection = await client.get_or_create_collection(config.collection_name)
     except Exception as e:
         logger.error(f"Failed to get/create the collection: {e}")
         raise SystemExit(1)
@@ -183,8 +192,6 @@ async def chunk_and_vectorise_core(
     stats = {"add": 0, "update": 0, "removed": 0}
     collection_lock = asyncio.Lock()
     stats_lock = asyncio.Lock()
-    # Chroma's HTTP client does not expose get_max_batch_size, so use a reasonable default
-    max_batch_size = 64
     semaphore = asyncio.Semaphore(os.cpu_count() or 1)
 
     logger.info(f"Starting vectorisation for {len(files)} files.")
@@ -195,9 +202,9 @@ async def chunk_and_vectorise_core(
             collection_lock,
             stats,
             stats_lock,
-            max_batch_size,
+            config.max_batch_size,
             semaphore,
-            language=language,
+            language=config.language,
         )
         logger.info(f"Finished processing {file}")
 
