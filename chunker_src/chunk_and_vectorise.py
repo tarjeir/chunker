@@ -217,7 +217,7 @@ async def chunk_and_vectorise_core(
     project_dir: Path,
     pattern: str,
     config: chunker_model.ChunkAndVectoriseConfig,
-    logger: logging.Logger,
+    logger_instance: logging.Logger,
 ):
     """
     Core logic for chunking and vectorising files in a project directory.
@@ -269,7 +269,7 @@ async def chunk_and_vectorise_core(
     try:
         collection = await client.get_or_create_collection(config.collection_name)
     except Exception as e:
-        logger.error(f"Failed to get/create the collection: {e}")
+        logger_instance.error(f"Failed to get/create the collection: {e}")
         raise SystemExit(1)
 
     stats = {"add": 0, "update": 0, "removed": 0}
@@ -277,11 +277,11 @@ async def chunk_and_vectorise_core(
     stats_lock = asyncio.Lock()
     semaphore = asyncio.Semaphore(os.cpu_count() or 1)
 
-    logger.info(f"Starting vectorisation for {len(files)} files.")
+    logger_instance.info(f"Starting vectorisation for {len(files)} files.")
     for file in files:
         await add_file_with_langchain(
             str(file),
-            logger,
+            logger_instance,
             collection,
             collection_lock,
             stats,
@@ -290,8 +290,8 @@ async def chunk_and_vectorise_core(
             semaphore,
             language=config.language,
         )
-        logger.info(f"Finished processing {file}")
+        logger_instance.info(f"Finished processing {file}")
 
-    logger.info(
+    logger_instance.info(
         f"All files processed. Added: {stats['add']}, Updated: {stats['update']}"
     )
