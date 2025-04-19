@@ -293,12 +293,14 @@ def _check_files_within_project_dir(files: list[Path], project_dir: Path) -> Non
                 )
 
 
+from typing import Union
+
 async def chunk_and_vectorise_core(
     project_dir: Path,
     pattern: str,
     config: chunker_model.ChunkAndVectoriseConfig,
     logger_instance: logging.Logger,
-):
+) -> Union[None, ValueError, FileNotFoundError, Exception]:
     """
     Core logic for chunking and vectorising files in a project directory.
 
@@ -306,21 +308,20 @@ async def chunk_and_vectorise_core(
         project_dir (Path): The root directory of the project.
         pattern (str): Glob pattern for files to process.
         config (chunker_model.ChunkAndVectoriseConfig): Configuration object for chunking and vectorising.
+        logger_instance (logging.Logger): Logger instance.
 
     Returns:
-        None
+        Union[None, ValueError, FileNotFoundError, Exception]: None on success, or an error object on failure.
     """
-    # Check if pattern is missing or misused
     if pattern.startswith("--"):
-        raise ValueError("The first argument must be the file pattern (e.g., '*.py').")
+        return ValueError("The first argument must be the file pattern (e.g., '*.py').")
 
     validation_error = validate_glob_pattern(pattern)
     if validation_error:
-        raise validation_error
+        return validation_error
 
-    # Validate language
     if config.language.lower() not in [l.name.lower() for l in Language]:
-        raise ValueError(
+        return ValueError(
             f"'{config.language}' is not a supported language. "
             f"Choose from: {', '.join(l.name.lower() for l in Language)}"
         )
@@ -328,21 +329,22 @@ async def chunk_and_vectorise_core(
     files = list(project_dir.glob(pattern))
     files = _filter_files_with_gitignore(files, project_dir)
     if not files:
-        raise FileNotFoundError(f"No files found matching pattern: {pattern}")
-
-    _check_files_within_project_dir(files, project_dir)
-
-    # Setup Chroma async HTTP client
-    client = await chromadb.AsyncHttpClient(
-        host=config.chroma_host,
-        port=config.chroma_port,
-    )
+        return FileNotFoundError(f"No files found matching pattern: {pattern}")
 
     try:
+        _check_files_within_project_dir(files, project_dir)
+    except ValueError as e:
+        return e
+
+    try:
+        client = await chromadb.AsyncHttpClient(
+            host=config.chroma_host,
+            port=config.chroma_port,
+        )
         collection = await client.get_or_create_collection(config.collection_name)
     except Exception as e:
         logger_instance.error(f"Failed to get/create the collection: {e}")
-        raise SystemExit(1)
+        return e
 
     stats = {"add": 0, "update": 0, "removed": 0}
     collection_lock = asyncio.Lock()
@@ -367,3 +369,4 @@ async def chunk_and_vectorise_core(
     logger_instance.info(
         f"All files processed. Added: {stats['add']}, Updated: {stats['update']}"
     )
+    return None
