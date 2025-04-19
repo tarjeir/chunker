@@ -59,7 +59,7 @@ async def _remove_existing_chunks(
 
 
 async def _read_and_chunk_file(
-    full_path_str: str, semaphore: asyncio.Semaphore, language: str
+    full_path_str: str, semaphore: asyncio.Semaphore, language: str, logger
 ) -> list[str]:
     """
     Read the file and split it into chunks.
@@ -68,6 +68,7 @@ async def _read_and_chunk_file(
         full_path_str (str): Absolute file path.
         semaphore (asyncio.Semaphore): Semaphore to limit concurrency.
         language (str): Programming language for chunking.
+        logger: Logger instance.
 
     Returns:
         list[str]: List of text chunks.
@@ -162,6 +163,7 @@ async def _update_stats(stats: dict[str, int], stats_lock, key: str):
 
 async def add_file_with_langchain(
     file_path: str,
+    logger,
     collection,
     collection_lock,
     stats: dict[str, int],
@@ -175,6 +177,7 @@ async def add_file_with_langchain(
 
     Args:
         file_path (str): Path to the file to process.
+        logger: Logger instance.
         collection: The ChromaDB collection object.
         collection_lock: Asyncio lock for collection operations.
         stats (dict[str, int]): Dictionary to track add/update stats.
@@ -193,7 +196,7 @@ async def add_file_with_langchain(
         collection, collection_lock, full_path_str
     )
 
-    chunks = await _read_and_chunk_file(full_path_str, semaphore, language)
+    chunks = await _read_and_chunk_file(full_path_str, semaphore, language, logger)
     if not chunks or (len(chunks) == 1 and chunks[0] == ""):
         return
 
@@ -277,6 +280,7 @@ async def chunk_and_vectorise_core(
     for file in files:
         await add_file_with_langchain(
             str(file),
+            logger,
             collection,
             collection_lock,
             stats,
