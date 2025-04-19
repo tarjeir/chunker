@@ -26,6 +26,7 @@ async def chunk_and_vectorise(
     chroma_port = os.environ.get("CHROMA_PORT")
     collection_name = os.environ.get("CHROMA_COLLECTION_NAME")
     max_batch_size = os.environ.get("CHROMA_MAX_BATCH_SIZE", "64")
+    language = os.environ.get("LANGUAGE", "python")
 
     if not project_dir:
         await ctx.log("error", "Error: project_dir must be specified.")
@@ -86,6 +87,90 @@ async def chunk_and_vectorise(
     except Exception as e:
         await ctx.log("error", f"Unexpected error: {e}")
         return f"Unexpected error: {e}"
+
+
+@mcp.tool()
+async def query_chunks(
+    query: str,
+    ctx: Context,
+) -> str:
+    """
+    Query chunks from the ChromaDB collection using the provided query string.
+    All configuration is loaded from environment variables.
+
+    Args:
+        query (str): The query string to search for.
+        ctx (Context): The MCP context for logging.
+
+    Returns:
+        str: A summary of the query result or an error message.
+    """
+    import os
+    import logging
+
+    chroma_host = os.environ.get("CHROMA_HOST")
+    chroma_port = os.environ.get("CHROMA_PORT")
+    collection_name = os.environ.get("CHROMA_COLLECTION_NAME")
+    max_batch_size = os.environ.get("CHROMA_MAX_BATCH_SIZE", "64")
+    language = os.environ.get("LANGUAGE", "python")
+
+    missing = []
+    if not chroma_host:
+        missing.append("CHROMA_HOST")
+    if not chroma_port:
+        missing.append("CHROMA_PORT")
+    if not collection_name:
+        missing.append("CHROMA_COLLECTION_NAME")
+    if not max_batch_size:
+        missing.append("CHROMA_MAX_BATCH_SIZE")
+    if not language:
+        missing.append("LANGUAGE")
+
+    if missing:
+        msg = f"Error: Missing required environment variables: {', '.join(missing)}"
+        await ctx.log("error", msg)
+        return msg
+
+    try:
+        chroma_port_int = int(chroma_port)
+    except Exception:
+        msg = f"Error: CHROMA_PORT must be an integer, got {chroma_port!r}"
+        await ctx.log("error", msg)
+        return msg
+
+    try:
+        max_batch_size_int = int(max_batch_size)
+    except Exception:
+        msg = f"Error: CHROMA_MAX_BATCH_SIZE must be an integer, got {max_batch_size!r}"
+        await ctx.log("error", msg)
+        return msg
+
+    config = chunker_model.ChunkAndVectoriseConfig(
+        chroma_host=chroma_host,
+        chroma_port=chroma_port_int,
+        collection_name=collection_name,
+        max_batch_size=max_batch_size_int,
+        language=language,
+    )
+
+    logger = logging.getLogger(__name__)
+
+    try:
+        result = await query_chunks_core(
+            query_text=query,
+            config=config,
+            logger=logger,
+        )
+        summary = (
+            f"Found {len(result.chunks)} chunks.\n"
+            + "\n".join(f"{i+1}. {path}" for i, path in enumerate(result.paths))
+        )
+        await ctx.log("info", summary)
+        return summary
+    except Exception as e:
+        msg = f"Error during query: {e}"
+        await ctx.log("error", msg)
+        return msg
 
 
 @mcp.prompt()
