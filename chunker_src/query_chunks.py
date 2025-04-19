@@ -51,7 +51,6 @@ async def query_chunks_core(
 
     chunks = []
     paths = []
-    # ChromaDB returns: documents: Optional[List[List[Document]]], metadatas: Optional[List[List[Metadata]]]
     documents = results.get("documents")
     metadatas = results.get("metadatas")
     if (
