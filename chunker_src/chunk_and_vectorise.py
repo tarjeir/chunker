@@ -325,6 +325,44 @@ def _check_files_within_project_dir(files: list[Path], project_dir: Path) -> Non
                     f"File {f} is outside the project directory {project_dir}"
                 )
 
+async def chunk_and_vectorise_core(
+    project_dir: Path,
+    pattern: str,
+    config: chunker_model.ChunkAndVectoriseConfig,
+    logger_instance: logging.Logger,
+):
+    """
+    Core logic for chunking and vectorising files in a project directory.
+
+    Args:
+        project_dir (Path): The root directory of the project.
+        pattern (str): Glob pattern for files to process.
+        config (chunker_model.ChunkAndVectoriseConfig): Configuration object for chunking and vectorising.
+        logger_instance (logging.Logger): Logger instance.
+
+    Returns:
+        None
+    """
+    # Check if pattern is missing or misused
+    if pattern.startswith("--"):
+        raise ValueError("The first argument must be the file pattern (e.g., '*.py').")
+
+    validation_error = validate_glob_pattern(pattern)
+    if validation_error:
+        raise validation_error
+
+    # Validate language
+    if config.language.lower() not in [l.name.lower() for l in Language]:
+        raise ValueError(
+            f"'{config.language}' is not a supported language. "
+            f"Choose from: {', '.join(l.name.lower() for l in Language)}"
+        )
+
+    files = list(project_dir.glob(pattern))
+    files = _filter_files_with_gitignore(files, project_dir)
+    if not files:
+        raise FileNotFoundError(f"No files found matching pattern: {pattern}")
+
     _check_files_within_project_dir(files, project_dir)
 
     # Setup Chroma async HTTP client
