@@ -8,6 +8,9 @@ from chunker_src.chunk_and_vectorise import chunk_and_vectorise_core
 from chunker_src.query_chunks import query_chunks_core
 import logging
 from chunker_src import model as chunker_model
+import sys
+from typing import Any, Literal
+
 
 mcp = FastMCP("Chunker MCP")
 
@@ -178,7 +181,6 @@ async def delete_collection(
 
     Args:
         ctx (Context): The MCP context for logging.
-        collection_name (str): The name of the collection to delete. If not provided, uses MCP globals or CHROMA_COLLECTION_NAME from env.
 
     Returns:
         str: Success or error message.
@@ -191,7 +193,6 @@ async def delete_collection(
     if not collection_name:
         await ctx.log("error", "Error: collection_name must be specified.")
         return "Error: collection_name must be specified."
-
     if not chroma_host:
         await ctx.log("error", "Error: chroma_host must be specified.")
         return "Error: chroma_host must be specified."
@@ -300,10 +301,6 @@ def language_help() -> str:
         "- powershell\n"
         "Example: Use '--language python' for Python files, or '--language js' for JavaScript files."
     )
-
-
-import sys
-from typing import Any, Literal
 
 
 def main(
