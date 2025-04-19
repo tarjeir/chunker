@@ -1,4 +1,5 @@
-from chromadb.async_client import AsyncClient
+import chromadb
+
 
 async def delete_all_records_in_collection(
     chroma_host: str,
@@ -16,6 +17,6 @@ async def delete_all_records_in_collection(
     Raises:
         Exception: If connection, collection retrieval, or deletion fails.
     """
-    client = AsyncClient(host=chroma_host, port=chroma_port)
+    client = await chromadb.AsyncHttpClient(host=chroma_host, port=chroma_port)
     collection = await client.get_collection(collection_name)
     await collection.delete(where={})
