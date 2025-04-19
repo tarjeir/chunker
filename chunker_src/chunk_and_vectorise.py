@@ -299,9 +299,20 @@ async def chunk_and_vectorise_core(
     if not files:
         raise FileNotFoundError(f"No files found matching pattern: {pattern}")
 
+def _check_files_within_project_dir(files: list[Path], project_dir: Path) -> None:
+    """
+    Ensure all files are within the project directory.
+
+    Args:
+        files (list[Path]): List of file paths to check.
+        project_dir (Path): The root directory of the project.
+
+    Raises:
+        ValueError: If any file is outside the project directory.
+    """
     for f in files:
         try:
-            if not Path(f).resolve().is_relative_to(project_dir.resolve()):
+            if not f.resolve().is_relative_to(project_dir.resolve()):
                 raise ValueError(
                     f"File {f} is outside the project directory {project_dir}"
                 )
@@ -319,6 +330,8 @@ async def chunk_and_vectorise_core(
         host=config.chroma_host,
         port=config.chroma_port,
     )
+
+    _check_files_within_project_dir(files, project_dir)
 
     try:
         collection = await client.get_or_create_collection(config.collection_name)
