@@ -178,7 +178,7 @@ async def delete_collection(
 
     Args:
         ctx (Context): The MCP context for logging.
-        collection_name (str): The name of the collection to delete. If not provided, uses CHROMA_COLLECTION_NAME from env.
+        collection_name (str): The name of the collection to delete. If not provided, uses MCP globals or CHROMA_COLLECTION_NAME from env.
 
     Returns:
         str: Success or error message.
@@ -188,7 +188,13 @@ async def delete_collection(
 
     chroma_host = os.environ.get("CHROMA_HOST")
     chroma_port = os.environ.get("CHROMA_PORT")
-    env_collection_name = os.environ.get("CHROMA_COLLECTION_NAME")
+
+    # Try to get collection_name from globals if not provided
+    if collection_name is None:
+        collection_name = ctx.globals.get("collection_name")
+    # Fallback to environment variable if still None
+    if not collection_name:
+        collection_name = os.environ.get("CHROMA_COLLECTION_NAME")
 
     if not chroma_host:
         await ctx.log("error", "Error: chroma_host must be specified.")
@@ -196,7 +202,6 @@ async def delete_collection(
     if not chroma_port:
         await ctx.log("error", "Error: chroma_port must be specified.")
         return "Error: chroma_port must be specified."
-
     try:
         chroma_port_int = int(chroma_port)
     except Exception:
@@ -204,10 +209,8 @@ async def delete_collection(
         return f"Error: chroma_port must be an integer, got {chroma_port!r}"
 
     if not collection_name:
-        collection_name = env_collection_name
-    if not collection_name:
-        await ctx.log("error", "Error: collection_name must be specified.")
-        return "Error: collection_name must be specified."
+        await ctx.log("error", "Error: collection_name must be specified (argument, global, or env).")
+        return "Error: collection_name must be specified (argument, global, or env)."
 
     try:
         client = chromadb.HttpClient(host=chroma_host, port=chroma_port_int)
