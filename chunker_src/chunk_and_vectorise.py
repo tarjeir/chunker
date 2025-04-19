@@ -292,6 +292,7 @@ def _check_files_within_project_dir(
                 return ValueError(
                     f"File {f} is outside the project directory {project_dir}"
                 )
+    return None
 
 
 from typing import Union
