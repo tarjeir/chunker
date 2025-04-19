@@ -74,13 +74,13 @@ async def chunk_and_vectorise(
 
     logger = logging.getLogger(__name__)
 
-    try:
-        await chunk_and_vectorise_core(
-            Path(project_dir),
-            pattern,
-            config,
-            logger_instance=logger,
-        )
+    result = await chunk_and_vectorise_core(
+        Path(project_dir),
+        pattern,
+        config,
+        logger_instance=logger,
+    )
+    if result is None:
         await ctx.log(
             "info",
             f"Chunked and vectorised files matching: {pattern} (language: {language})",
@@ -88,12 +88,9 @@ async def chunk_and_vectorise(
         return (
             f"Chunked and vectorised files matching: {pattern} (language: {language})"
         )
-    except SystemExit as e:
-        await ctx.log("error", f"Error: {e}")
-        return f"Error: {e}"
-    except Exception as e:
-        await ctx.log("error", f"Unexpected error: {e}")
-        return f"Unexpected error: {e}"
+    else:
+        await ctx.log("error", f"Error: {getattr(result, 'message', str(result))}")
+        return f"Error: {getattr(result, 'message', str(result))}"
 
 
 @mcp.tool(
