@@ -5,7 +5,7 @@ import chromadb
 
 async def query_chunks_core(
     query_text: str,
-    config: chunker_model.ChunkAndVectoriseConfig,
+    config: chunker_model.QueryChunksConfig,
     logger: logging.Logger,
     n_results: int = 10,
 ) -> list[chunker_model.QueryResult]:
@@ -62,9 +62,13 @@ async def query_chunks_core(
     ):
         for doc, meta in zip(documents[0], metadatas[0]):
             chunk = [doc]
-            path = [meta.get("path", "") if isinstance(meta, dict) else ""]
-            query_results.append(chunker_model.QueryResult(chunks=chunk, paths=path))
+            path: list[str] = [
+                str(meta.get("path", "")) if isinstance(meta, dict) else ""
+            ]
+            query_results.append(chunker_model.QueryResult(chunks=chunk, path=path))
     else:
-        logger.warning("QueryResult missing or malformed: no documents or metadatas found.")
+        logger.warning(
+            "QueryResult missing or malformed: no documents or metadatas found."
+        )
 
     return query_results

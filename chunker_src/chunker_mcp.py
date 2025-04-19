@@ -154,9 +154,12 @@ async def query_chunks(
             logger=logger,
             n_results=n_results_int,
         )
-        summary = f"Found {len(result.chunks)} chunks.\n" + "\n".join(
-            f"{i+1}. {path}" for i, path in enumerate(result.paths)
-        )
+        summary = "["
+        for r in result:
+            summary += r.model_dump_json()
+            summary += ","
+        summary += "]"
+
         await ctx.log("info", summary)
         return summary
     except Exception as e:

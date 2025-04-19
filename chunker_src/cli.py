@@ -126,7 +126,7 @@ def query_chunks(
         if not result:
             typer.echo("No results found.")
         else:
-            json_result = json.dumps([r.dict() for r in result], indent=2)
+            json_result = json.dumps([r.model_dump_json() for r in result], indent=2)
             typer.echo(json_result)
     except Exception as e:
         typer.echo(f"Error during query: {e}", err=True)
