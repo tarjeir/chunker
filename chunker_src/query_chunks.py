@@ -2,6 +2,7 @@ import logging
 from chunker_src import model as chunker_model
 import chromadb
 
+
 async def query_chunks_core(
     query_text: str,
     config: chunker_model.ChunkAndVectoriseConfig,
