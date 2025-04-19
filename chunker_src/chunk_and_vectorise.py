@@ -164,25 +164,25 @@ async def _update_stats(stats: dict[str, int], stats_lock, key: str):
 
 async def add_file_with_langchain(
     file_path: str,
-    logger,
-    collection,
-    collection_lock,
+    logger: logging.Logger,
+    collection: object,
+    collection_lock: asyncio.Lock,
     stats: dict[str, int],
-    stats_lock,
+    stats_lock: asyncio.Lock,
     max_batch_size: int,
     semaphore: asyncio.Semaphore,
     language: str = "python",
-):
+) -> None:
     """
     Add a file's contents to a ChromaDB collection, chunked and with metadata.
 
     Args:
         file_path (str): Path to the file to process.
-        logger: Logger instance.
-        collection: The ChromaDB collection object.
-        collection_lock: Asyncio lock for collection operations.
+        logger (logging.Logger): Logger instance.
+        collection (object): The ChromaDB collection object.
+        collection_lock (asyncio.Lock): Asyncio lock for collection operations.
         stats (dict[str, int]): Dictionary to track add/update stats.
-        stats_lock: Asyncio lock for stats.
+        stats_lock (asyncio.Lock): Asyncio lock for stats.
         max_batch_size (int): Maximum batch size for collection.add().
         semaphore (asyncio.Semaphore): Semaphore to limit concurrency.
         language (str): Programming language for chunking.
