@@ -45,23 +45,20 @@ def chunk_and_vectorise(
         max_batch_size=max_batch_size,
         language=language,
     )
-    try:
-        asyncio.run(
-            chunk_and_vectorise_core(
-                project_dir=project_dir,
-                pattern=pattern,
-                config=config,
-                logger_instance=logger,
-            )
+    result = asyncio.run(
+        chunk_and_vectorise_core(
+            project_dir=project_dir,
+            pattern=pattern,
+            config=config,
+            logger_instance=logger,
         )
-    except ValueError as e:
-        typer.echo(f"Error: {e}", err=True)
-        raise typer.Exit(code=2)
-    except FileNotFoundError as e:
-        typer.echo(f"Error: {e}", err=True)
-        raise typer.Exit(code=1)
-    except SystemExit as e:
-        typer.echo(f"Error: {e}", err=True)
+    )
+    if result is None:
+        typer.echo(
+            f"Chunked and vectorised files matching: {pattern} (language: {language})"
+        )
+    else:
+        typer.echo(f"Error: {getattr(result, 'message', str(result))}", err=True)
         raise typer.Exit(code=2)
 
 
