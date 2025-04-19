@@ -59,37 +59,6 @@ def chunk_and_vectorise_mcp(ctx: typer.Context):
     chunker_mcp_main()
 
 
-@app.command(
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
-)
-def vectorcode_cli(ctx: typer.Context):
-    import sys
-    from vectorcode import main
-
-    sys.argv = [sys.argv[0]] + ctx.args
-    main.main()
-
-
-@app.command(
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
-)
-def vectorcode_mcp(ctx: typer.Context):
-    import sys
-    from vectorcode import mcp_main
-
-    sys.argv = [sys.argv[0]] + ctx.args
-    mcp_main.main()
-
-
-@app.command(
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
-)
-def vectorcode_lsp(ctx: typer.Context):
-    import sys
-    from vectorcode import lsp_main
-
-    sys.argv = [sys.argv[0]] + ctx.args
-    lsp_main.main()
 
 
 if __name__ == "__main__":
