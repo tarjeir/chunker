@@ -211,7 +211,7 @@ Use the prompts and commands as described in the "Using the Chunker MCP" section
 
 ## Using VectorCode MCP with Claude for Desktop
 
-You can also use the VectorCode MCP (Multi-Collection Processor) via the `vectorcode_mcp` proxy command with Claude for Desktop. This allows you to access all MCP features of VectorCode from Claude's interface.
+You can also use the VectorCode MCP (Multi-Collection Processor) via the `vectorcode-mcp` proxy command with Claude for Desktop. This allows you to access all MCP features of VectorCode from Claude's interface.
 
 ### 1. Install Chunker (and VectorCode) Globally with pipx
 
@@ -221,7 +221,7 @@ If you haven't already, install your chunker project globally:
 pipx install --editable .
 ```
 
-This will make the `chunker` command available globally, including the `vectorcode_mcp` proxy.
+This will make the `chunker` command available globally, including the `vectorcode-mcp` proxy.
 
 ### 2. Configure Claude for Desktop to Use the VectorCode MCP Server
 
@@ -231,7 +231,7 @@ Add the following to your Claude for Desktop configuration (or use the UI to add
 {
   "mcpServers": {
     "vectorcode": {
-      "command": /<home DIR>/.local/bin/chunker",
+      "command": "/<home DIR>/.local/bin/chunker",
       "args": [
         "vectorcode-mcp"
       ]
@@ -250,23 +250,44 @@ Use the prompts and commands as described in the VectorCode documentation.
 
 ---
 
+## Querying Chunks from the CLI
+
+You can query your ChromaDB collection for relevant code chunks using the `query-chunks` command:
+
+```sh
+chunker query-chunks "your search query" --chroma-host <host> --chroma-port <port> --collection-name <name> --n-results <N>
+```
+
+- `"your search query"`: The text or code you want to search for.
+- `--chroma-host`: ChromaDB host (default: 'localhost').
+- `--chroma-port`: ChromaDB port (default: 8000).
+- `--collection-name`: ChromaDB collection name (default: 'default').
+- `--n-results`: Number of results to return (default: 10).
+
+Example:
+
+```sh
+chunker query-chunks "def my_function" --n-results 5
+```
+
+---
+
 ## Querying
 
-After vectorising your files, you can query your ChromaDB collection for relevant code chunks using the `vectorcode` CLI.
+After vectorising your files, you can query your ChromaDB collection for relevant code chunks using the `chunker` CLI.
 
 To search for code chunks matching an expression and include chunk metadata (such as file path and line range), use:
 
 ```sh
-vectorcode query "some expression" --include chunk
+chunker query-chunks "some expression"
 ```
 
 - `"some expression"`: The text or code you want to search for.
-- `--include chunk`: Ensures the output includes chunk metadata (file path, start, and end lines).
 
 **Example:**
 
 ```sh
-vectorcode query "def my_function" --include chunk
+chunker query-chunks "def my_function"
 ```
 
 This will return all code chunks containing `def my_function`, along with their file path and line range.
