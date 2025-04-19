@@ -20,7 +20,7 @@ done
 
 # Run chunking
 echo "Running chunking..."
-python3 -m chunker_src.cli chunk_and_vectorise \
+chunker chunk_and_vectorise \
   "$PROJECT_ROOT" "$PATTERN" \
   --language "$LANGUAGE" \
   --chroma-host "$CHROMA_HOST" \
@@ -30,7 +30,7 @@ python3 -m chunker_src.cli chunk_and_vectorise \
 
 # Run test/query
 echo "Testing if file was chunked..."
-RESULT=$(python3 -m chunker_src.cli query_chunks \
+RESULT=$(chunker query_chunks \
   "$TEST_FILE" \
   --chroma-host "$CHROMA_HOST" \
   --chroma-port "$CHROMA_PORT" \
