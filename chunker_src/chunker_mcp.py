@@ -1,4 +1,5 @@
 import argparse
+from chunker_src.crud import delete_all_records_in_collection
 from fastmcp import FastMCP, Context
 import os
 from fastmcp.prompts.prompt import UserMessage, AssistantMessage
@@ -168,12 +169,9 @@ async def query_chunks(
         return msg
 
 
-from chunker_src.crud import delete_all_records_in_collection
-
 @mcp.tool()
 async def delete_collection(
     ctx: Context,
-    collection_name: str = None,
 ) -> str:
     """
     Delete all records in the specified ChromaDB collection.
@@ -189,11 +187,10 @@ async def delete_collection(
 
     chroma_host = os.environ.get("CHROMA_HOST")
     chroma_port = os.environ.get("CHROMA_PORT")
-
-    if collection_name is None:
-        collection_name = ctx.globals.get("collection_name")
+    collection_name = os.environ.get("CHROMA_COLLECTION_NAME")
     if not collection_name:
-        collection_name = os.environ.get("CHROMA_COLLECTION_NAME")
+        await ctx.log("error", "Error: collection_name must be specified.")
+        return "Error: collection_name must be specified."
 
     if not chroma_host:
         await ctx.log("error", "Error: chroma_host must be specified.")
@@ -204,11 +201,16 @@ async def delete_collection(
     try:
         chroma_port_int = int(chroma_port)
     except Exception:
-        await ctx.log("error", f"Error: chroma_port must be an integer, got {chroma_port!r}")
+        await ctx.log(
+            "error", f"Error: chroma_port must be an integer, got {chroma_port!r}"
+        )
         return f"Error: chroma_port must be an integer, got {chroma_port!r}"
 
     if not collection_name:
-        await ctx.log("error", "Error: collection_name must be specified (argument, global, or env).")
+        await ctx.log(
+            "error",
+            "Error: collection_name must be specified (argument, global, or env).",
+        )
         return "Error: collection_name must be specified (argument, global, or env)."
 
     try:
@@ -217,12 +219,13 @@ async def delete_collection(
             chroma_port=chroma_port_int,
             collection_name=collection_name,
         )
-        await ctx.log("info", f"All records deleted from collection '{collection_name}'.")
+        await ctx.log(
+            "info", f"All records deleted from collection '{collection_name}'."
+        )
         return f"All records deleted from collection '{collection_name}'."
     except Exception as e:
         await ctx.log("error", f"Error deleting collection: {e}")
         return f"Error deleting collection: {e}"
-
 
 
 @mcp.prompt()
