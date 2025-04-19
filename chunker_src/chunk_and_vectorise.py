@@ -4,30 +4,17 @@ import uuid
 from pathlib import Path
 from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
 import chromadb
-import logging
 from typing import Union
 from chunker_src import model as chunker_model
 
 PathLike = Union[str, Path]
-
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
-)
-logger = logging.getLogger(__name__)
 
 
 def get_uuid() -> str:
     return uuid.uuid4().hex
 
 
-def expand_path(path: PathLike, absolute: bool = False) -> PathLike:
-    expanded = os.path.expanduser(os.path.expandvars(path))
-    if absolute:
-        return os.path.abspath(expanded)
-    return expanded
-
-
-async def _expand_and_validate_path(file_path: str) -> str:
+async def _expand_and_validate_path(path: PathLike, absolute: bool = False) -> str:
     """
     Expand and validate the file path.
 
@@ -37,11 +24,16 @@ async def _expand_and_validate_path(file_path: str) -> str:
     Returns:
         str: Absolute expanded file path.
     """
-    expanded = expand_path(str(file_path), True)
+    expanded = os.path.expanduser(os.path.expandvars(path))
+    if absolute:
+        return os.path.abspath(expanded)
+
     return str(expanded)
 
 
-async def _remove_existing_chunks(collection, collection_lock, full_path_str: str) -> int:
+async def _remove_existing_chunks(
+    collection, collection_lock, full_path_str: str
+) -> int:
     """
     Remove existing chunks for the file from the collection.
 
@@ -99,28 +91,24 @@ async def _read_and_chunk_file(
         return []
 
 
-def _compute_chunk_metadata(code: str, chunks: list[str], full_path_str: str) -> list[dict]:
+def _compute_chunk_metadata(chunks: list[str], full_path_str: str) -> list[dict]:
     """
     Compute line ranges for each chunk.
 
     Args:
-        code (str): The full file content.
         chunks (list[str]): List of text chunks.
         full_path_str (str): Absolute file path.
 
     Returns:
         list[dict]: List of metadata dicts for each chunk.
     """
-    lines = code.splitlines()
     metas = []
     current_line = 0
     for chunk in chunks:
         chunk_lines = chunk.count("\n") + 1
         start_line = current_line
         end_line = current_line + chunk_lines - 1
-        metas.append(
-            {"path": full_path_str, "start": start_line, "end": end_line}
-        )
+        metas.append({"path": full_path_str, "start": start_line, "end": end_line})
         current_line = end_line + 1
     return metas
 
@@ -131,7 +119,6 @@ async def _add_chunks_to_collection(
     chunks: list[str],
     metas: list[dict],
     max_batch_size: int,
-    full_path_str: str,
 ):
     """
     Add chunks and metadata to the collection in batches.
@@ -210,12 +197,10 @@ async def add_file_with_langchain(
     if not chunks or (len(chunks) == 1 and chunks[0] == ""):
         return
 
-    with open(full_path_str, "r", encoding="utf-8") as f:
-        code = f.read()
-    metas = _compute_chunk_metadata(code, chunks, full_path_str)
+    metas = _compute_chunk_metadata(chunks, full_path_str)
 
     await _add_chunks_to_collection(
-        collection, collection_lock, chunks, metas, max_batch_size, full_path_str
+        collection, collection_lock, chunks, metas, max_batch_size
     )
 
     if num_existing_chunks:
