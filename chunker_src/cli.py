@@ -3,6 +3,7 @@ import typer
 from pathlib import Path
 import logging
 from chunker_src.chunk_and_vectorise import chunk_and_vectorise_core
+from chunker_src import model as chunker_model
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
@@ -26,14 +27,20 @@ def chunk_and_vectorise(
     chroma_host: str = typer.Option(None, help="ChromaDB host "),
     chroma_port: int = typer.Option(None, help="ChromaDB port "),
 ):
+    config = chunker_model.ChunkAndVectoriseConfig(
+        chroma_host=chroma_host or chunker_model.ChunkAndVectoriseConfig.chroma_host,
+        chroma_port=chroma_port or chunker_model.ChunkAndVectoriseConfig.chroma_port,
+        collection_name=chunker_model.ChunkAndVectoriseConfig.collection_name,
+        max_batch_size=chunker_model.ChunkAndVectoriseConfig.max_batch_size,
+        language=language,
+    )
     try:
         asyncio.run(
             chunk_and_vectorise_core(
                 project_dir=project_dir,
                 pattern=pattern,
-                language=language,
-                chroma_host=chroma_host,
-                chroma_port=chroma_port,
+                config=config,
+                logger_instance=logger,
             )
         )
     except ValueError as e:
