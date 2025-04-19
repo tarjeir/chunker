@@ -8,7 +8,6 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
 import chromadb
 from typing import Union
 from chunker_src import model as chunker_model
-import pathspec
 
 PathLike = Union[str, Path]
 
@@ -298,17 +297,20 @@ def _check_files_within_project_dir(
 from typing import Union
 from chunker_src import model as chunker_model
 
+
 async def chunk_and_vectorise_core(
     project_dir: Path,
     pattern: str,
     config: chunker_model.ChunkAndVectoriseConfig,
     logger_instance: logging.Logger,
-) -> Union[None,
-           chunker_model.InvalidPatternError,
-           chunker_model.UnsupportedLanguageError,
-           chunker_model.NoFilesFoundError,
-           chunker_model.FileOutsideProjectDirError,
-           chunker_model.ChromaDBError]:
+) -> Union[
+    None,
+    chunker_model.InvalidPatternError,
+    chunker_model.UnsupportedLanguageError,
+    chunker_model.NoFilesFoundError,
+    chunker_model.FileOutsideProjectDirError,
+    chunker_model.ChromaDBError,
+]:
     """
     Core logic for chunking and vectorising files in a project directory.
 
@@ -357,7 +359,9 @@ async def chunk_and_vectorise_core(
         collection = await client.get_or_create_collection(config.collection_name)
     except Exception as e:
         logger_instance.error(f"Failed to get/create the collection: {e}")
-        return chunker_model.ChromaDBError(message=f"Failed to get/create the collection: {e}")
+        return chunker_model.ChromaDBError(
+            message=f"Failed to get/create the collection: {e}"
+        )
 
     stats = {"add": 0, "update": 0, "removed": 0}
     collection_lock = asyncio.Lock()
