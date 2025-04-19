@@ -17,3 +17,16 @@ class ChunkAndVectoriseConfig:
     collection_name: str = "default"
     max_batch_size: int = 64
     language: str = "python"
+
+
+@dataclass
+class QueryResult:
+    """
+    Result of a chunk query.
+
+    Args:
+        chunks (list[str]): The retrieved chunk texts.
+        paths (list[str]): The file paths corresponding to each chunk.
+    """
+    chunks: list[str]
+    paths: list[str]
