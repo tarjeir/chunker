@@ -12,7 +12,6 @@ import sys
 from typing import Any, Literal
 
 
-
 mcp = FastMCP("Chunker MCP")
 
 
@@ -250,7 +249,6 @@ async def list_project_directories(
     Returns:
         str: A newline-separated list of directories, or an error message.
     """
-    import os
 
     project_dir = os.environ.get("PROJECT_DIR")
     if not project_dir:
@@ -260,7 +258,9 @@ async def list_project_directories(
     try:
         base = Path(project_dir)
         if not base.exists() or not base.is_dir():
-            await ctx.log("error", f"Error: PROJECT_DIR '{project_dir}' is not a valid directory.")
+            await ctx.log(
+                "error", f"Error: PROJECT_DIR '{project_dir}' is not a valid directory."
+            )
             return f"Error: PROJECT_DIR '{project_dir}' is not a valid directory."
 
         if recursive:
