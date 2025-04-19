@@ -27,6 +27,152 @@ def expand_path(path: PathLike, absolute: bool = False) -> PathLike:
     return expanded
 
 
+async def _expand_and_validate_path(file_path: str) -> str:
+    """
+    Expand and validate the file path.
+
+    Args:
+        file_path (str): Path to the file.
+
+    Returns:
+        str: Absolute expanded file path.
+    """
+    expanded = expand_path(str(file_path), True)
+    return str(expanded)
+
+
+async def _remove_existing_chunks(collection, collection_lock, full_path_str: str) -> int:
+    """
+    Remove existing chunks for the file from the collection.
+
+    Args:
+        collection: The ChromaDB collection object.
+        collection_lock: Asyncio lock for collection operations.
+        full_path_str (str): Absolute file path.
+
+    Returns:
+        int: Number of existing chunks removed.
+    """
+    async with collection_lock:
+        existing = await collection.get(
+            where={"path": full_path_str},
+            include=["metadatas"],
+        )
+        num_existing_chunks = len(existing["ids"]) if "ids" in existing else 0
+
+        if num_existing_chunks:
+            await collection.delete(where={"path": full_path_str})
+
+    return num_existing_chunks
+
+
+async def _read_and_chunk_file(
+    full_path_str: str, semaphore: asyncio.Semaphore, language: str
+) -> list[str]:
+    """
+    Read the file and split it into chunks.
+
+    Args:
+        full_path_str (str): Absolute file path.
+        semaphore (asyncio.Semaphore): Semaphore to limit concurrency.
+        language (str): Programming language for chunking.
+
+    Returns:
+        list[str]: List of text chunks.
+    """
+    try:
+        async with semaphore:
+            with open(full_path_str, "r", encoding="utf-8") as f:
+                code = f.read()
+            splitter = RecursiveCharacterTextSplitter.from_language(
+                getattr(Language, language.upper())
+            )
+            chunks = splitter.split_text(code)
+            return chunks
+    except UnicodeDecodeError:
+        logger.warning(
+            f"UnicodeDecodeError: Skipping file {full_path_str} (probably binary)"
+        )
+        return []
+    except Exception as e:
+        logger.warning(f"Error reading or chunking file {full_path_str}: {e}")
+        return []
+
+
+def _compute_chunk_metadata(code: str, chunks: list[str], full_path_str: str) -> list[dict]:
+    """
+    Compute line ranges for each chunk.
+
+    Args:
+        code (str): The full file content.
+        chunks (list[str]): List of text chunks.
+        full_path_str (str): Absolute file path.
+
+    Returns:
+        list[dict]: List of metadata dicts for each chunk.
+    """
+    lines = code.splitlines()
+    metas = []
+    current_line = 0
+    for chunk in chunks:
+        chunk_lines = chunk.count("\n") + 1
+        start_line = current_line
+        end_line = current_line + chunk_lines - 1
+        metas.append(
+            {"path": full_path_str, "start": start_line, "end": end_line}
+        )
+        current_line = end_line + 1
+    return metas
+
+
+async def _add_chunks_to_collection(
+    collection,
+    collection_lock,
+    chunks: list[str],
+    metas: list[dict],
+    max_batch_size: int,
+    full_path_str: str,
+):
+    """
+    Add chunks and metadata to the collection in batches.
+
+    Args:
+        collection: The ChromaDB collection object.
+        collection_lock: Asyncio lock for collection operations.
+        chunks (list[str]): List of text chunks.
+        metas (list[dict]): List of metadata dicts.
+        max_batch_size (int): Maximum batch size for collection.add().
+        full_path_str (str): Absolute file path.
+
+    Returns:
+        None
+    """
+    async with collection_lock:
+        for idx in range(0, len(chunks), max_batch_size):
+            inserted_chunks = chunks[idx : idx + max_batch_size]
+            await collection.add(
+                ids=[get_uuid() for _ in inserted_chunks],
+                documents=inserted_chunks,
+                metadatas=metas[idx : idx + max_batch_size],
+            )
+
+
+async def _update_stats(stats: dict[str, int], stats_lock, key: str):
+    """
+    Update the stats dictionary.
+
+    Args:
+        stats (dict[str, int]): Stats dictionary.
+        stats_lock: Asyncio lock for stats.
+        key (str): 'add' or 'update'.
+
+    Returns:
+        None
+    """
+    async with stats_lock:
+        stats[key] += 1
+
+
 async def add_file_with_langchain(
     file_path: str,
     collection,
@@ -53,69 +199,29 @@ async def add_file_with_langchain(
     Returns:
         None
     """
-    full_path_str = str(expand_path(str(file_path), True))
+    full_path_str = await _expand_and_validate_path(file_path)
     logger.info(f"Processing file: {full_path_str}")
 
-    # Check for existing chunks and delete if present
-    async with collection_lock:
-        existing = await collection.get(
-            where={"path": full_path_str},
-            include=["metadatas"],
-        )
-        num_existing_chunks = len(existing["ids"]) if "ids" in existing else 0
+    num_existing_chunks = await _remove_existing_chunks(
+        collection, collection_lock, full_path_str
+    )
 
-        if num_existing_chunks:
-            await collection.delete(where={"path": full_path_str})
-
-    try:
-        async with semaphore:
-            with open(full_path_str, "r", encoding="utf-8") as f:
-                code = f.read()
-            splitter = RecursiveCharacterTextSplitter.from_language(
-                getattr(Language, language.upper())
-            )
-            logger.info(f"Chunking file {full_path_str} with language '{language}'")
-            chunks = splitter.split_text(code)
-            logger.info(f"Created {len(chunks)} chunks for {full_path_str}")
-            if len(chunks) == 0 or (len(chunks) == 1 and chunks[0] == ""):
-                return
-
-            # Compute line ranges for each chunk
-            lines = code.splitlines()
-            metas = []
-            current_line = 0
-            for chunk in chunks:
-                chunk_lines = chunk.count("\n") + 1
-                start_line = current_line
-                end_line = current_line + chunk_lines - 1
-                metas.append(
-                    {"path": full_path_str, "start": start_line, "end": end_line}
-                )
-                current_line = end_line + 1
-
-            async with collection_lock:
-                for idx in range(0, len(chunks), max_batch_size):
-                    inserted_chunks = chunks[idx : idx + max_batch_size]
-                    logger.info(
-                        f"Adding {len(inserted_chunks)} chunks to collection for {full_path_str}"
-                    )
-                    await collection.add(
-                        ids=[get_uuid() for _ in inserted_chunks],
-                        documents=inserted_chunks,
-                        metadatas=metas[idx : idx + max_batch_size],
-                    )
-    except UnicodeDecodeError:
-        logger.warning(
-            f"UnicodeDecodeError: Skipping file {full_path_str} (probably binary)"
-        )
+    chunks = await _read_and_chunk_file(full_path_str, semaphore, language)
+    if not chunks or (len(chunks) == 1 and chunks[0] == ""):
         return
 
+    with open(full_path_str, "r", encoding="utf-8") as f:
+        code = f.read()
+    metas = _compute_chunk_metadata(code, chunks, full_path_str)
+
+    await _add_chunks_to_collection(
+        collection, collection_lock, chunks, metas, max_batch_size, full_path_str
+    )
+
     if num_existing_chunks:
-        async with stats_lock:
-            stats["update"] += 1
+        await _update_stats(stats, stats_lock, "update")
     else:
-        async with stats_lock:
-            stats["add"] += 1
+        await _update_stats(stats, stats_lock, "add")
 
 
 async def chunk_and_vectorise_core(
