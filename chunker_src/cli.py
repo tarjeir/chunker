@@ -83,15 +83,11 @@ def query_chunks(
     chroma_host: str = typer.Option(
         "localhost", help="ChromaDB host (default: 'localhost')"
     ),
-    chroma_port: int = typer.Option(
-        8000, help="ChromaDB port (default: 8000)"
-    ),
+    chroma_port: int = typer.Option(8000, help="ChromaDB port (default: 8000)"),
     collection_name: str = typer.Option(
         "default", help="ChromaDB collection name (default: 'default')"
     ),
-    n_results: int = typer.Option(
-        10, help="Number of results to return (default: 10)"
-    ),
+    n_results: int = typer.Option(10, help="Number of results to return (default: 10)"),
 ):
     """
     Query chunks from a ChromaDB collection and print the results.
@@ -103,7 +99,6 @@ def query_chunks(
         collection_name (str): ChromaDB collection name.
         n_results (int): Number of results to return.
     """
-    import logging
 
     logger = logging.getLogger(__name__)
 
