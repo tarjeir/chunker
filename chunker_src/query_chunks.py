@@ -8,13 +8,11 @@ async def query_chunks_core(
     config: chunker_model.ChunkAndVectoriseConfig,
     logger: logging.Logger,
     n_results: int = 10,
-) -> chunker_model.QueryResult:
+) -> list[chunker_model.QueryResult]:
     """
-    Query chunks from a ChromaDB collection and return their texts and file paths.
+    Query chunks from a ChromaDB collection and return a list of QueryResult objects.
 
-    The ChromaDB collection.query method returns a TypedDict with fields:
-    ids, embeddings, documents, uris, data, metadatas, distances, included.
-    This function extracts chunk texts and file paths from the nested structure.
+    Each QueryResult contains a single chunk and its associated file path.
 
     Args:
         query_text (str): The text to query for.
@@ -23,7 +21,7 @@ async def query_chunks_core(
         n_results (int): Number of results to return from the query (default: 10).
 
     Returns:
-        chunker_model.QueryResult: The result containing chunk texts and file paths.
+        list[chunker_model.QueryResult]: List of QueryResult objects, each with one chunk and one path.
     """
     if n_results < 1:
         logger.warning("n_results < 1; setting n_results to 1.")
@@ -49,8 +47,7 @@ async def query_chunks_core(
         logger.error(f"Query failed: {e}")
         raise
 
-    chunks = []
-    paths = []
+    query_results = []
     documents = results.get("documents")
     metadatas = results.get("metadatas")
     if (
@@ -64,9 +61,10 @@ async def query_chunks_core(
         and isinstance(metadatas[0], list)
     ):
         for doc, meta in zip(documents[0], metadatas[0]):
-            chunks.append(doc)
-            paths.append(meta.get("path", "") if isinstance(meta, dict) else "")
+            chunk = [doc]
+            path = [meta.get("path", "") if isinstance(meta, dict) else ""]
+            query_results.append(chunker_model.QueryResult(chunks=chunk, paths=path))
     else:
         logger.warning("QueryResult missing or malformed: no documents or metadatas found.")
 
-    return chunker_model.QueryResult(chunks=chunks, paths=paths)
+    return query_results
