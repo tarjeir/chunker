@@ -325,13 +325,13 @@ def _check_files_within_project_dir(files: list[Path], project_dir: Path) -> Non
                     f"File {f} is outside the project directory {project_dir}"
                 )
 
+    _check_files_within_project_dir(files, project_dir)
+
     # Setup Chroma async HTTP client
     client = await chromadb.AsyncHttpClient(
         host=config.chroma_host,
         port=config.chroma_port,
     )
-
-    _check_files_within_project_dir(files, project_dir)
 
     try:
         collection = await client.get_or_create_collection(config.collection_name)
