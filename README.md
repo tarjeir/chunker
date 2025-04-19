@@ -131,19 +131,6 @@ Chunk all JavaScript files in a subdirectory:
 ```sh
 chunker chunk-and-vectorise src "src/**/*.js" --language javascript
 ```
-
-You can also use the `vectorcode-mcp` subcommand in the same way:
-
-```sh
-chunker vectorcode-mcp [options...]
-```
-
-You can also use the `vectorcode-lsp` subcommand in the same way:
-
-```sh
-chunker vectorcode-lsp [options...]
-```
-
 If installed with pipx, you can run the CLI directly:
 
 ```sh
@@ -222,26 +209,6 @@ pipx install --editable .
 ```
 
 This will make the `chunker` command available globally, including the `vectorcode-mcp` proxy.
-
-### 2. Configure Claude for Desktop to Use the VectorCode MCP Server
-
-Add the following to your Claude for Desktop configuration (or use the UI to add a new MCP server):
-
-```json
-{
-  "mcpServers": {
-    "vectorcode": {
-      "command": "/<home DIR>/.local/bin/chunker",
-      "args": [
-        "vectorcode-mcp"
-      ]
-    }
-  }
-}
-```
-
-- The `chunker` command is provided globally by `pipx`.
-- The `args` array specifies the `vectorcode-mcp` subcommand, which proxies to the VectorCode MCP.
 
 ### 3. Use the Tool in Claude
 
