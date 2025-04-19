@@ -265,6 +265,10 @@ async def chunk_and_vectorise_core(
     )
 
     # Get or create collection
+    import logging
+
+    logger = logging.getLogger(__name__)
+
     try:
         collection = await client.get_or_create_collection(config.collection_name)
     except Exception as e:
