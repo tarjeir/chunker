@@ -40,13 +40,17 @@ async def chunk_and_vectorise(
     try:
         chroma_port_int = int(chroma_port)
     except Exception:
-        await ctx.log("error", f"Error: chroma_port must be an integer, got {chroma_port!r}")
+        await ctx.log(
+            "error", f"Error: chroma_port must be an integer, got {chroma_port!r}"
+        )
         return f"Error: chroma_port must be an integer, got {chroma_port!r}"
 
     try:
         max_batch_size_int = int(max_batch_size)
     except Exception:
-        await ctx.log("error", f"Error: max_batch_size must be an integer, got {max_batch_size!r}")
+        await ctx.log(
+            "error", f"Error: max_batch_size must be an integer, got {max_batch_size!r}"
+        )
         return f"Error: max_batch_size must be an integer, got {max_batch_size!r}"
 
     config = chunker_model.ChunkAndVectoriseConfig(
@@ -163,6 +167,6 @@ def main():
     args, _ = parser.parse_known_args()
 
     os.environ["PROJECT_DIR"] = args.project_dir
-    os.environ["CHROMA_HOST"] = args.chroma_host or "127.0.0.1"
-    os.environ["CHROMA_PORT"] = str(args.chroma_port) if args.chroma_port else "8000"
+    os.environ["CHROMA_HOST"] = args.chroma_host
+    os.environ["CHROMA_PORT"] = str(args.chroma_port)
     mcp.run()
