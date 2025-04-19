@@ -51,3 +51,29 @@ class QueryResult(BaseModel):
 
     chunks: list[str]
     path: list[str]
+
+
+@dataclass
+class ChunkAndVectoriseError:
+    """Base class for chunk and vectorise errors."""
+    message: str
+
+@dataclass
+class InvalidPatternError(ChunkAndVectoriseError):
+    pass
+
+@dataclass
+class UnsupportedLanguageError(ChunkAndVectoriseError):
+    pass
+
+@dataclass
+class NoFilesFoundError(ChunkAndVectoriseError):
+    pass
+
+@dataclass
+class FileOutsideProjectDirError(ChunkAndVectoriseError):
+    pass
+
+@dataclass
+class ChromaDBError(ChunkAndVectoriseError):
+    pass

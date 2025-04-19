@@ -296,13 +296,19 @@ def _check_files_within_project_dir(
 
 
 from typing import Union
+from chunker_src import model as chunker_model
 
 async def chunk_and_vectorise_core(
     project_dir: Path,
     pattern: str,
     config: chunker_model.ChunkAndVectoriseConfig,
     logger_instance: logging.Logger,
-) -> Union[None, ValueError, FileNotFoundError, Exception]:
+) -> Union[None,
+           chunker_model.InvalidPatternError,
+           chunker_model.UnsupportedLanguageError,
+           chunker_model.NoFilesFoundError,
+           chunker_model.FileOutsideProjectDirError,
+           chunker_model.ChromaDBError]:
     """
     Core logic for chunking and vectorising files in a project directory.
 
@@ -313,29 +319,35 @@ async def chunk_and_vectorise_core(
         logger_instance (logging.Logger): Logger instance.
 
     Returns:
-        Union[None, ValueError, FileNotFoundError, Exception]: None on success, or an error object on failure.
+        Union[None, ...]: None on success, or a specific error object on failure.
     """
     if pattern.startswith("--"):
-        return ValueError("The first argument must be the file pattern (e.g., '*.py').")
+        return chunker_model.InvalidPatternError(
+            message="The first argument must be the file pattern (e.g., '*.py')."
+        )
 
     validation_error = validate_glob_pattern(pattern)
     if validation_error:
-        return validation_error
+        return chunker_model.InvalidPatternError(message=str(validation_error))
 
     if config.language.lower() not in [l.name.lower() for l in Language]:
-        return ValueError(
-            f"'{config.language}' is not a supported language. "
-            f"Choose from: {', '.join(l.name.lower() for l in Language)}"
+        return chunker_model.UnsupportedLanguageError(
+            message=(
+                f"'{config.language}' is not a supported language. "
+                f"Choose from: {', '.join(l.name.lower() for l in Language)}"
+            )
         )
 
     files = list(project_dir.glob(pattern))
     files = _filter_files_with_gitignore(files, project_dir)
     if not files:
-        return FileNotFoundError(f"No files found matching pattern: {pattern}")
+        return chunker_model.NoFilesFoundError(
+            message=f"No files found matching pattern: {pattern}"
+        )
 
     check_error = _check_files_within_project_dir(files, project_dir)
     if check_error:
-        return check_error
+        return chunker_model.FileOutsideProjectDirError(message=str(check_error))
 
     try:
         client = await chromadb.AsyncHttpClient(
@@ -345,7 +357,7 @@ async def chunk_and_vectorise_core(
         collection = await client.get_or_create_collection(config.collection_name)
     except Exception as e:
         logger_instance.error(f"Failed to get/create the collection: {e}")
-        return e
+        return chunker_model.ChromaDBError(message=f"Failed to get/create the collection: {e}")
 
     stats = {"add": 0, "update": 0, "removed": 0}
     collection_lock = asyncio.Lock()
