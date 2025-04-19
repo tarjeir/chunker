@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 import uuid
 from pathlib import Path
@@ -216,6 +217,7 @@ async def chunk_and_vectorise_core(
     project_dir: Path,
     pattern: str,
     config: chunker_model.ChunkAndVectoriseConfig,
+    logger: logging.Logger,
 ):
     """
     Core logic for chunking and vectorising files in a project directory.
@@ -263,11 +265,6 @@ async def chunk_and_vectorise_core(
         host=config.chroma_host,
         port=config.chroma_port,
     )
-
-    # Get or create collection
-    import logging
-
-    logger = logging.getLogger(__name__)
 
     try:
         collection = await client.get_or_create_collection(config.collection_name)
