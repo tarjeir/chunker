@@ -10,6 +10,7 @@ dependencies = [
     "chromadb-client>=1.0.5",
     "onnxruntime>=1.21.1",
     "tokenizers>=0.21.1",
+    "pathspec>=0.12.1",
 ]
 
 [project.scripts]
