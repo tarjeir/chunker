@@ -168,6 +168,8 @@ async def query_chunks(
         return msg
 
 
+from chunker_src.crud import delete_all_records_in_collection
+
 @mcp.tool()
 async def delete_collection(
     ctx: Context,
@@ -183,16 +185,13 @@ async def delete_collection(
     Returns:
         str: Success or error message.
     """
-    import chromadb
     import os
 
     chroma_host = os.environ.get("CHROMA_HOST")
     chroma_port = os.environ.get("CHROMA_PORT")
 
-    # Try to get collection_name from globals if not provided
     if collection_name is None:
         collection_name = ctx.globals.get("collection_name")
-    # Fallback to environment variable if still None
     if not collection_name:
         collection_name = os.environ.get("CHROMA_COLLECTION_NAME")
 
@@ -213,9 +212,11 @@ async def delete_collection(
         return "Error: collection_name must be specified (argument, global, or env)."
 
     try:
-        client = chromadb.HttpClient(host=chroma_host, port=chroma_port_int)
-        collection = client.get_collection(collection_name)
-        collection.delete(where={})
+        await delete_all_records_in_collection(
+            chroma_host=chroma_host,
+            chroma_port=chroma_port_int,
+            collection_name=collection_name,
+        )
         await ctx.log("info", f"All records deleted from collection '{collection_name}'.")
         return f"All records deleted from collection '{collection_name}'."
     except Exception as e:

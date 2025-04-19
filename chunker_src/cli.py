@@ -6,6 +6,7 @@ import json
 from chunker_src.chunk_and_vectorise import chunk_and_vectorise_core
 from chunker_src import model as chunker_model
 from chunker_src.query_chunks import query_chunks_core
+from chunker_src.crud import delete_all_records_in_collection
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
@@ -151,12 +152,14 @@ def delete_collection(
         chroma_port (int): ChromaDB port.
         collection_name (str): ChromaDB collection name.
     """
-    import chromadb
-
     try:
-        client = chromadb.HttpClient(host=chroma_host, port=chroma_port)
-        collection = client.get_collection(collection_name)
-        collection.delete(where={})
+        asyncio.run(
+            delete_all_records_in_collection(
+                chroma_host=chroma_host,
+                chroma_port=chroma_port,
+                collection_name=collection_name,
+            )
+        )
         typer.echo(f"All records deleted from collection '{collection_name}'.")
     except Exception as e:
         typer.echo(f"Error deleting collection: {e}", err=True)
