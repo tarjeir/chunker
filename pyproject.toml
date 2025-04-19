@@ -8,6 +8,8 @@ dependencies = [
     "langchain-text-splitters",
     "fastmcp",
     "chromadb-client>=1.0.5",
+    "onnxruntime>=1.21.1",
+    "tokenizers>=0.21.1",
 ]
 
 [project.scripts]
