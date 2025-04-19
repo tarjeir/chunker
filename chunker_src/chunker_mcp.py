@@ -12,6 +12,7 @@ import sys
 from typing import Any, Literal
 
 
+
 mcp = FastMCP("Chunker MCP")
 
 
@@ -230,6 +231,54 @@ async def delete_collection(
     except Exception as e:
         await ctx.log("error", f"Error deleting collection: {e}")
         return f"Error deleting collection: {e}"
+
+
+@mcp.tool(
+    description="List directories in the project directory to help debug file patterns.",
+)
+async def list_project_directories(
+    ctx: Context,
+    recursive: bool = False,
+) -> str:
+    """
+    List all directories in the project directory.
+
+    Args:
+        ctx (Context): The MCP context for logging.
+        recursive (bool, optional): Whether to list directories recursively. Default is False.
+
+    Returns:
+        str: A newline-separated list of directories, or an error message.
+    """
+    import os
+
+    project_dir = os.environ.get("PROJECT_DIR")
+    if not project_dir:
+        await ctx.log("error", "Error: PROJECT_DIR must be specified.")
+        return "Error: PROJECT_DIR must be specified."
+
+    try:
+        base = Path(project_dir)
+        if not base.exists() or not base.is_dir():
+            await ctx.log("error", f"Error: PROJECT_DIR '{project_dir}' is not a valid directory.")
+            return f"Error: PROJECT_DIR '{project_dir}' is not a valid directory."
+
+        if recursive:
+            dirs = [p.relative_to(base) for p in base.rglob("*") if p.is_dir()]
+        else:
+            dirs = [p.relative_to(base) for p in base.iterdir() if p.is_dir()]
+
+        if not dirs:
+            await ctx.log("info", "No directories found in the project directory.")
+            return "No directories found in the project directory."
+
+        dir_list = "\n".join(str(d) for d in sorted(dirs))
+        await ctx.log("info", f"Found directories:\n{dir_list}")
+        return f"Found directories:\n{dir_list}"
+
+    except Exception as e:
+        await ctx.log("error", f"Error listing directories: {e}")
+        return f"Error listing directories: {e}"
 
 
 @mcp.prompt()
