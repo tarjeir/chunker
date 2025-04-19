@@ -355,6 +355,35 @@ def language_help() -> str:
     )
 
 
+@mcp.prompt()
+def good_pattern_help() -> str:
+    """
+    Explains what makes a good file pattern for chunking and vectorising.
+    """
+    return (
+        "A good file pattern is specific, safe, and efficient. "
+        "Here are some tips for writing effective patterns:\n"
+        "\n"
+        "- Be as specific as possible to avoid matching too many files. For example, use 'src/**/*.py' to match Python files only in the 'src' directory and its subdirectories.\n"
+        "- Avoid overly broad patterns like '**' or '**/*', which may include unwanted files and slow down processing.\n"
+        "- Do not use patterns that traverse outside the project directory (e.g., '../*.py').\n"
+        "- Prefer patterns that match only the file types you want to process (e.g., '*.js', 'docs/**/*.md').\n"
+        "- Remember that patterns are relative to the project root.\n"
+        "\n"
+        "Examples of good patterns:\n"
+        "- '*.py' (all Python files in the root directory)\n"
+        "- 'src/**/*.js' (all JavaScript files in 'src' and subdirectories)\n"
+        "- 'docs/**/*.md' (all Markdown files in the 'docs' folder)\n"
+        "\n"
+        "Examples of bad patterns:\n"
+        "- '**' (matches everything, including directories)\n"
+        "- '../*.py' (tries to access files outside the project)\n"
+        "- '*' (matches all files, regardless of type)\n"
+        "\n"
+        "Choose patterns that help you focus on the files you want to process, while avoiding unnecessary or unsafe matches."
+    )
+
+
 def main(
     transport: Literal["stdio", "sse"] | None = None,
     **transport_kwargs: Any,
