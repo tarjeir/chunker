@@ -171,7 +171,13 @@ Add the following to your Claude for Desktop configuration (or use the UI to add
       "args": [
         "chunk-and-vectorise-mcp",
         "--project_dir",
-        "/path/to/your/project"
+        "/path/to/your/project",
+        "--chroma_host",
+        "localhost",
+        "--chroma_port",
+        "8000",
+        "--chroma_collection_name",
+        "default"
       ]
     }
   }
@@ -188,6 +194,8 @@ Add the following to your Claude for Desktop configuration (or use the UI to add
 - Replace `/path/to/your/project` with the absolute path to your codebase.
 - The `chunker` command is provided globally by `pipx`.
 - The `args` array specifies the subcommand and required arguments.
+
+> **Note:** All four arguments (`--project_dir`, `--chroma_host`, `--chroma_port`, `--chroma_collection_name`) are now required for the MCP server to start.
 
 ### 3. Use the Tool in Claude
 
