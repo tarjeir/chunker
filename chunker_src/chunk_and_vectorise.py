@@ -12,6 +12,23 @@ from chunker_src import model as chunker_model
 PathLike = Union[str, Path]
 
 
+def validate_glob_pattern(pattern: str) -> Union[None, ValueError]:
+    """
+    Validate the glob pattern to prevent overly broad or unsafe file matches.
+
+    Args:
+        pattern (str): The glob pattern to validate.
+
+    Returns:
+        Union[None, ValueError]: None if the pattern is valid, or a ValueError if not.
+    """
+    if ".." in pattern:
+        return ValueError("Glob pattern must not contain parent directory traversal ('..').")
+    if pattern.strip() == "**" or pattern.strip().startswith("**/"):
+        return ValueError("Glob pattern must not recursively match all files (e.g., '**/*.py').")
+    return None
+
+
 def _get_uuid() -> str:
     return uuid.uuid4().hex
 
@@ -234,6 +251,10 @@ async def chunk_and_vectorise_core(
     # Check if pattern is missing or misused
     if pattern.startswith("--"):
         raise ValueError("The first argument must be the file pattern (e.g., '*.py').")
+
+    validation_error = validate_glob_pattern(pattern)
+    if validation_error:
+        raise validation_error
 
     # Validate language
     if config.language.lower() not in [l.name.lower() for l in Language]:
