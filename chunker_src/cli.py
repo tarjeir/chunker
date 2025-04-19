@@ -2,6 +2,7 @@ import asyncio
 import typer
 from pathlib import Path
 import logging
+import json
 from chunker_src.chunk_and_vectorise import chunk_and_vectorise_core
 from chunker_src import model as chunker_model
 from chunker_src.query_chunks import query_chunks_core
@@ -90,7 +91,7 @@ def query_chunks(
     n_results: int = typer.Option(10, help="Number of results to return (default: 10)"),
 ):
     """
-    Query chunks from a ChromaDB collection and print the results.
+    Query chunks from a ChromaDB collection and print the results as JSON.
 
     Args:
         query (str): The query string to search for.
@@ -122,11 +123,11 @@ def query_chunks(
                 n_results=n_results,
             )
         )
-        if not result.chunks:
+        if not result:
             typer.echo("No results found.")
         else:
-            for i, (chunk, path) in enumerate(zip(result.chunks, result.paths), 1):
-                typer.echo(f"{i}. Path: {path}\n   Chunk: {chunk}\n")
+            json_result = json.dumps([r.dict() for r in result], indent=2)
+            typer.echo(json_result)
     except Exception as e:
         typer.echo(f"Error during query: {e}", err=True)
         raise typer.Exit(code=1)
