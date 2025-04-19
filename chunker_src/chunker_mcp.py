@@ -168,6 +168,59 @@ async def query_chunks(
         return msg
 
 
+@mcp.tool()
+async def delete_collection(
+    ctx: Context,
+    collection_name: str = None,
+) -> str:
+    """
+    Delete all records in the specified ChromaDB collection.
+
+    Args:
+        ctx (Context): The MCP context for logging.
+        collection_name (str): The name of the collection to delete. If not provided, uses CHROMA_COLLECTION_NAME from env.
+
+    Returns:
+        str: Success or error message.
+    """
+    import chromadb
+    import os
+
+    chroma_host = os.environ.get("CHROMA_HOST")
+    chroma_port = os.environ.get("CHROMA_PORT")
+    env_collection_name = os.environ.get("CHROMA_COLLECTION_NAME")
+
+    if not chroma_host:
+        await ctx.log("error", "Error: chroma_host must be specified.")
+        return "Error: chroma_host must be specified."
+    if not chroma_port:
+        await ctx.log("error", "Error: chroma_port must be specified.")
+        return "Error: chroma_port must be specified."
+
+    try:
+        chroma_port_int = int(chroma_port)
+    except Exception:
+        await ctx.log("error", f"Error: chroma_port must be an integer, got {chroma_port!r}")
+        return f"Error: chroma_port must be an integer, got {chroma_port!r}"
+
+    if not collection_name:
+        collection_name = env_collection_name
+    if not collection_name:
+        await ctx.log("error", "Error: collection_name must be specified.")
+        return "Error: collection_name must be specified."
+
+    try:
+        client = chromadb.HttpClient(host=chroma_host, port=chroma_port_int)
+        collection = client.get_collection(collection_name)
+        collection.delete(where={})
+        await ctx.log("info", f"All records deleted from collection '{collection_name}'.")
+        return f"All records deleted from collection '{collection_name}'."
+    except Exception as e:
+        await ctx.log("error", f"Error deleting collection: {e}")
+        return f"Error deleting collection: {e}"
+
+
+
 @mcp.prompt()
 def pattern_help() -> str:
     """

@@ -133,5 +133,35 @@ def query_chunks(
         raise typer.Exit(code=1)
 
 
+@app.command()
+def delete_collection(
+    chroma_host: str = typer.Option(
+        "localhost", help="ChromaDB host (default: 'localhost')"
+    ),
+    chroma_port: int = typer.Option(8000, help="ChromaDB port (default: 8000)"),
+    collection_name: str = typer.Option(
+        "default", help="ChromaDB collection name (default: 'default')"
+    ),
+):
+    """
+    Delete all records in a specific ChromaDB collection.
+
+    Args:
+        chroma_host (str): ChromaDB host.
+        chroma_port (int): ChromaDB port.
+        collection_name (str): ChromaDB collection name.
+    """
+    import chromadb
+
+    try:
+        client = chromadb.HttpClient(host=chroma_host, port=chroma_port)
+        collection = client.get_collection(collection_name)
+        collection.delete(where={})
+        typer.echo(f"All records deleted from collection '{collection_name}'.")
+    except Exception as e:
+        typer.echo(f"Error deleting collection: {e}", err=True)
+        raise typer.Exit(code=1)
+
+
 if __name__ == "__main__":
     app()
