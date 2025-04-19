@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pydantic import BaseModel
 
 
 @dataclass
@@ -39,14 +40,13 @@ class QueryChunksConfig:
     n_results: int = 10
 
 
-@dataclass
-class QueryResult:
+class QueryResult(BaseModel):
     """
     Result of a chunk query.
 
     Args:
         chunks (list[str]): The retrieved chunk texts.
-        paths (list[str]): The file paths corresponding to each chunk.
+        path (list[str]): The file paths corresponding to each chunk.
     """
 
     chunks: list[str]
