@@ -27,9 +27,7 @@ def chunk_and_vectorise(
     chroma_host: str = typer.Option(
         "localhost", help="ChromaDB host (default: 'localhost')"
     ),
-    chroma_port: int = typer.Option(
-        8000, help="ChromaDB port (default: 8000)"
-    ),
+    chroma_port: int = typer.Option(8000, help="ChromaDB port (default: 8000)"),
     collection_name: str = typer.Option(
         "default", help="ChromaDB collection name (default: 'default')"
     ),
@@ -74,8 +72,6 @@ def chunk_and_vectorise_mcp(ctx: typer.Context):
     sys.argv = [sys.argv[0]] + ctx.args
 
     chunker_mcp_main()
-
-
 
 
 if __name__ == "__main__":

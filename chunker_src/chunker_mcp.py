@@ -115,22 +115,15 @@ async def query_chunks(
     max_batch_size = os.environ.get("CHROMA_MAX_BATCH_SIZE", "64")
     language = os.environ.get("LANGUAGE", "python")
 
-    missing = []
     if not chroma_host:
-        missing.append("CHROMA_HOST")
+        await ctx.log("error", "Error: chroma_host must be specified.")
+        return "Error: chroma_host must be specified."
     if not chroma_port:
-        missing.append("CHROMA_PORT")
+        await ctx.log("error", "Error: chroma_port must be specified.")
+        return "Error: chroma_port must be specified."
     if not collection_name:
-        missing.append("CHROMA_COLLECTION_NAME")
-    if not max_batch_size:
-        missing.append("CHROMA_MAX_BATCH_SIZE")
-    if not language:
-        missing.append("LANGUAGE")
-
-    if missing:
-        msg = f"Error: Missing required environment variables: {', '.join(missing)}"
-        await ctx.log("error", msg)
-        return msg
+        await ctx.log("error", "Error: chroma_collection_name must be specified.")
+        return "Error: chroma_collection_name must be specified."
 
     try:
         chroma_port_int = int(chroma_port)
@@ -162,9 +155,8 @@ async def query_chunks(
             config=config,
             logger=logger,
         )
-        summary = (
-            f"Found {len(result.chunks)} chunks.\n"
-            + "\n".join(f"{i+1}. {path}" for i, path in enumerate(result.paths))
+        summary = f"Found {len(result.chunks)} chunks.\n" + "\n".join(
+            f"{i+1}. {path}" for i, path in enumerate(result.paths)
         )
         await ctx.log("info", summary)
         return summary
@@ -249,6 +241,7 @@ def language_help() -> str:
 
 
 import sys
+
 
 def main() -> None:
     """
