@@ -114,7 +114,7 @@ async def add_file_with_langchain(
 async def chunk_and_vectorise_core(
     project_dir: Path,
     pattern: str,
-    config: ChunkAndVectoriseConfig,
+    config: chunker_model.ChunkAndVectoriseConfig,
 ):
     """
     Core logic for chunking and vectorising files in a project directory.
@@ -122,7 +122,7 @@ async def chunk_and_vectorise_core(
     Args:
         project_dir (Path): The root directory of the project.
         pattern (str): Glob pattern for files to process.
-        config (ChunkAndVectoriseConfig): Configuration object for chunking and vectorising.
+        config (chunker_model.ChunkAndVectoriseConfig): Configuration object for chunking and vectorising.
 
     Returns:
         None
