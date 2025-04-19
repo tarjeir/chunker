@@ -19,4 +19,4 @@ async def delete_all_records_in_collection(
     """
     client = await chromadb.AsyncHttpClient(host=chroma_host, port=chroma_port)
     collection = await client.get_collection(collection_name)
-    await collection.delete(where={})
+    await collection.delete(where={"id": {"$ne": None}})
