@@ -25,23 +25,23 @@ def chunk_and_vectorise(
         "python", help="Programming language for splitting (e.g., 'python')"
     ),
     chroma_host: str = typer.Option(
-        None, help="ChromaDB host (default: 'localhost')"
+        "localhost", help="ChromaDB host (default: 'localhost')"
     ),
     chroma_port: int = typer.Option(
-        None, help="ChromaDB port (default: 8000)"
+        8000, help="ChromaDB port (default: 8000)"
     ),
     collection_name: str = typer.Option(
-        None, help="ChromaDB collection name (default: 'default')"
+        "default", help="ChromaDB collection name (default: 'default')"
     ),
     max_batch_size: int = typer.Option(
-        None, help="Maximum batch size for collection.add() (default: 64)"
+        64, help="Maximum batch size for collection.add() (default: 64)"
     ),
 ):
     config = chunker_model.ChunkAndVectoriseConfig(
-        chroma_host=chroma_host or chunker_model.ChunkAndVectoriseConfig.chroma_host,
-        chroma_port=chroma_port or chunker_model.ChunkAndVectoriseConfig.chroma_port,
-        collection_name=collection_name or chunker_model.ChunkAndVectoriseConfig.collection_name,
-        max_batch_size=max_batch_size or chunker_model.ChunkAndVectoriseConfig.max_batch_size,
+        chroma_host=chroma_host,
+        chroma_port=chroma_port,
+        collection_name=collection_name,
+        max_batch_size=max_batch_size,
         language=language,
     )
     try:
