@@ -1,21 +1,17 @@
-# VectorCode Chunker
+# Chunker
 
 ## Table of Contents
 
-- [VectorCode Chunker](#vectorcode-chunker)
+- [Chunker](#chunker)
 - [Features](#features)
 - [Installation](#installation)
   - [Using uv](#using-uv)
   - [Using pipx](#using-pipx)
 - [Setting up ChromaDB with Docker](#setting-up-chromadb-with-docker)
 - [Usage](#usage)
-- [Using the VectorCode CLI Proxy](#using-the-vectorcode-cli-proxy)
-- [Using the VectorCode MCP CLI Proxy](#using-the-vectorcode-mcp-cli-proxy)
-- [Using the Chunker MCP](#using-the-chunker-mcp)
-- [Using the VectorCode LSP CLI Proxy](#using-the-vectorcode-lsp-cli-proxy)
 - [Usage (Installed CLI)](#usage-installed-cli)
 - [Using Chunker MCP with Claude for Desktop](#using-chunker-mcp-with-claude-for-desktop)
-- [Using VectorCode MCP with Claude for Desktop](#using-vectorcode-mcp-with-claude-for-desktop)
+- [Querying Chunks from the CLI](#querying-chunks-from-the-cli)
 - [Querying](#querying)
 - [Output](#output)
 - [License](#license)
@@ -106,73 +102,6 @@ Example for JavaScript files:
 python chunker.py chunk-and-vectorise src "src/**/*.js" --language javascript
 ```
 
-## Using the VectorCode CLI Proxy
-
-You can access the full `vectorcode` CLI through this tool using the `vectorcode-cli` command. This forwards all arguments to the underlying `vectorcode` command-line interface.
-
-**Example:**
-
-```sh
-python chunker.py vectorcode-cli query "this is a query"
-```
-
-All arguments after `vectorcode-cli` are passed directly to `vectorcode`. For example, to check the version:
-
-```sh
-python chunker.py vectorcode-cli version
-```
-
-Or to run any other `vectorcode` subcommand:
-
-```sh
-python chunker.py vectorcode-cli <subcommand> [options...]
-```
-
-## Using the VectorCode MCP CLI Proxy
-
-You can access the `vectorcode` MCP (Multi-Collection Processor) CLI through this tool using the `vectorcode-mcp` command. This forwards all arguments to the underlying `vectorcode.mcp_main` command-line interface.
-
-**Example:**
-
-```sh
-python chunker.py vectorcode-mcp --option value
-```
-
-All arguments after `vectorcode-mcp` are passed directly to the `vectorcode.mcp_main` CLI. For example, to see available options:
-
-```sh
-python chunker.py vectorcode-mcp --help
-```
-
-## Using the Chunker MCP
-
-You can use the MCP (Multi-Collection Processor) interface for chunking and vectorising via `chunker_mcp.py`.  
-This requires you to specify the project directory with `--project_dir`.
-
-**Example:**
-
-```sh
-python chunker_mcp.py --project_dir .  # Add other MCP options as needed
-```
-
-When using the MCP tool, the `chunk_and_vectorise` tool will use the `PROJECT_DIR` environment variable set by the `--project_dir` argument.
-
-## Using the VectorCode LSP CLI Proxy
-
-You can access the `vectorcode` LSP (Language Server Protocol) CLI through this tool using the `vectorcode-lsp` command. This forwards all arguments to the underlying `vectorcode.lsp_main` command-line interface.
-
-**Example:**
-
-```sh
-python chunker.py vectorcode-lsp --option value
-```
-
-All arguments after `vectorcode-lsp` are passed directly to the `vectorcode.lsp_main` CLI. For example, to see available options:
-
-```sh
-python chunker.py vectorcode-lsp --help
-```
-
 ## Usage (Installed CLI)
 
 If you have installed this project using `pipx` or `pip install`, the `chunker` command will be available on your PATH.
@@ -198,19 +127,6 @@ Chunk all JavaScript files in a subdirectory:
 ```sh
 chunker chunk-and-vectorise src "src/**/*.js" --language javascript
 ```
-
-You can also use the `vectorcode-mcp` subcommand in the same way:
-
-```sh
-chunker vectorcode-mcp [options...]
-```
-
-You can also use the `vectorcode-lsp` subcommand in the same way:
-
-```sh
-chunker vectorcode-lsp [options...]
-```
-
 If installed with pipx, you can run the CLI directly:
 
 ```sh
@@ -251,7 +167,13 @@ Add the following to your Claude for Desktop configuration (or use the UI to add
       "args": [
         "chunk-and-vectorise-mcp",
         "--project_dir",
-        "/path/to/your/project"
+        "/path/to/your/project",
+        "--chroma_host",
+        "localhost",
+        "--chroma_port",
+        "8000",
+        "--chroma_collection_name",
+        "default"
       ]
     }
   }
@@ -269,6 +191,8 @@ Add the following to your Claude for Desktop configuration (or use the UI to add
 - The `chunker` command is provided globally by `pipx`.
 - The `args` array specifies the subcommand and required arguments.
 
+> **Note:** All four arguments (`--project_dir`, `--chroma_host`, `--chroma_port`, `--chroma_collection_name`) are now required for the MCP server to start.
+
 ### 3. Use the Tool in Claude
 
 Once configured, you can invoke the chunker MCP tool from Claude for Desktop.  
@@ -276,64 +200,45 @@ Use the prompts and commands as described in the "Using the Chunker MCP" section
 
 ---
 
-## Using VectorCode MCP with Claude for Desktop
 
-You can also use the VectorCode MCP (Multi-Collection Processor) via the `vectorcode_mcp` proxy command with Claude for Desktop. This allows you to access all MCP features of VectorCode from Claude's interface.
+## Querying Chunks from the CLI
 
-### 1. Install Chunker (and VectorCode) Globally with pipx
-
-If you haven't already, install your chunker project globally:
+You can query your ChromaDB collection for relevant code chunks using the `query-chunks` command:
 
 ```sh
-pipx install --editable .
+chunker query-chunks "your search query" --chroma-host <host> --chroma-port <port> --collection-name <name> --n-results <N>
 ```
 
-This will make the `chunker` command available globally, including the `vectorcode_mcp` proxy.
+- `"your search query"`: The text or code you want to search for.
+- `--chroma-host`: ChromaDB host (default: 'localhost').
+- `--chroma-port`: ChromaDB port (default: 8000).
+- `--collection-name`: ChromaDB collection name (default: 'default').
+- `--n-results`: Number of results to return (default: 10).
 
-### 2. Configure Claude for Desktop to Use the VectorCode MCP Server
+Example:
 
-Add the following to your Claude for Desktop configuration (or use the UI to add a new MCP server):
-
-```json
-{
-  "mcpServers": {
-    "vectorcode": {
-      "command": /<home DIR>/.local/bin/chunker",
-      "args": [
-        "vectorcode-mcp"
-      ]
-    }
-  }
-}
+```sh
+chunker query-chunks "def my_function" --n-results 5
 ```
-
-- The `chunker` command is provided globally by `pipx`.
-- The `args` array specifies the `vectorcode-mcp` subcommand, which proxies to the VectorCode MCP.
-
-### 3. Use the Tool in Claude
-
-Once configured, you can invoke the VectorCode MCP tool from Claude for Desktop.  
-Use the prompts and commands as described in the VectorCode documentation.
 
 ---
 
 ## Querying
 
-After vectorising your files, you can query your ChromaDB collection for relevant code chunks using the `vectorcode` CLI.
+After vectorising your files, you can query your ChromaDB collection for relevant code chunks using the `chunker` CLI.
 
 To search for code chunks matching an expression and include chunk metadata (such as file path and line range), use:
 
 ```sh
-vectorcode query "some expression" --include chunk
+chunker query-chunks "some expression"
 ```
 
 - `"some expression"`: The text or code you want to search for.
-- `--include chunk`: Ensures the output includes chunk metadata (file path, start, and end lines).
 
 **Example:**
 
 ```sh
-vectorcode query "def my_function" --include chunk
+chunker query-chunks "def my_function"
 ```
 
 This will return all code chunks containing `def my_function`, along with their file path and line range.

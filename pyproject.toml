@@ -6,8 +6,10 @@ requires-python = ">=3.13"
 dependencies = [
     "typer>=0.15.2",
     "langchain-text-splitters",
-    "vectorcode[lsp,mcp]>=0.5.6",
     "fastmcp",
+    "chromadb-client>=1.0.5",
+    "onnxruntime>=1.21.1",
+    "tokenizers>=0.21.1",
 ]
 
 [project.scripts]

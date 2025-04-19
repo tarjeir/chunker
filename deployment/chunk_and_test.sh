@@ -20,15 +20,22 @@ done
 
 # Run chunking
 echo "Running chunking..."
-python3 chunker.py chunk-and-vectorise \
+chunker chunk-and-vectorise \
   "$PROJECT_ROOT" "$PATTERN" \
   --language "$LANGUAGE" \
   --chroma-host "$CHROMA_HOST" \
-  --chroma-port "$CHROMA_PORT"
+  --chroma-port "$CHROMA_PORT" \
+  --collection-name "default" \
+  --max-batch-size 64
 
 # Run test/query
 echo "Testing if file was chunked..."
-RESULT=$(python3 chunker.py vectorcode-cli query "$TEST_FILE" --include chunk)
+RESULT=$(chunker query-chunks \
+  "$TEST_FILE" \
+  --chroma-host "$CHROMA_HOST" \
+  --chroma-port "$CHROMA_PORT" \
+  --collection-name "default" \
+  --n-results 10)
 
 if echo "$RESULT" | grep -q "$PROJECT_ROOT/$TEST_FILE"; then
   echo "SUCCESS: Found chunks for $PROJECT_ROOT/$TEST_FILE"

@@ -3,6 +3,8 @@ import typer
 from pathlib import Path
 import logging
 from chunker_src.chunk_and_vectorise import chunk_and_vectorise_core
+from chunker_src import model as chunker_model
+from chunker_src.query_chunks import query_chunks_core
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
@@ -23,17 +25,31 @@ def chunk_and_vectorise(
     language: str = typer.Option(
         "python", help="Programming language for splitting (e.g., 'python')"
     ),
-    chroma_host: str = typer.Option(None, help="ChromaDB host "),
-    chroma_port: int = typer.Option(None, help="ChromaDB port "),
+    chroma_host: str = typer.Option(
+        "localhost", help="ChromaDB host (default: 'localhost')"
+    ),
+    chroma_port: int = typer.Option(8000, help="ChromaDB port (default: 8000)"),
+    collection_name: str = typer.Option(
+        "default", help="ChromaDB collection name (default: 'default')"
+    ),
+    max_batch_size: int = typer.Option(
+        64, help="Maximum batch size for collection.add() (default: 64)"
+    ),
 ):
+    config = chunker_model.ChunkAndVectoriseConfig(
+        chroma_host=chroma_host,
+        chroma_port=chroma_port,
+        collection_name=collection_name,
+        max_batch_size=max_batch_size,
+        language=language,
+    )
     try:
         asyncio.run(
             chunk_and_vectorise_core(
                 project_dir=project_dir,
                 pattern=pattern,
-                language=language,
-                chroma_host=chroma_host,
-                chroma_port=chroma_port,
+                config=config,
+                logger_instance=logger,
             )
         )
     except ValueError as e:
@@ -59,37 +75,61 @@ def chunk_and_vectorise_mcp(ctx: typer.Context):
     chunker_mcp_main()
 
 
-@app.command(
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
-)
-def vectorcode_cli(ctx: typer.Context):
-    import sys
-    from vectorcode import main
+@app.command()
+def query_chunks(
+    query: str = typer.Argument(
+        ..., help="Query string to search for in the collection"
+    ),
+    chroma_host: str = typer.Option(
+        "localhost", help="ChromaDB host (default: 'localhost')"
+    ),
+    chroma_port: int = typer.Option(8000, help="ChromaDB port (default: 8000)"),
+    collection_name: str = typer.Option(
+        "default", help="ChromaDB collection name (default: 'default')"
+    ),
+    n_results: int = typer.Option(10, help="Number of results to return (default: 10)"),
+):
+    """
+    Query chunks from a ChromaDB collection and print the results.
 
-    sys.argv = [sys.argv[0]] + ctx.args
-    main.main()
+    Args:
+        query (str): The query string to search for.
+        chroma_host (str): ChromaDB host.
+        chroma_port (int): ChromaDB port.
+        collection_name (str): ChromaDB collection name.
+        n_results (int): Number of results to return.
+    """
 
+    logger = logging.getLogger(__name__)
 
-@app.command(
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
-)
-def vectorcode_mcp(ctx: typer.Context):
-    import sys
-    from vectorcode import mcp_main
+    if n_results < 1:
+        typer.echo("Error: n_results must be at least 1.", err=True)
+        raise typer.Exit(code=2)
 
-    sys.argv = [sys.argv[0]] + ctx.args
-    mcp_main.main()
+    config = chunker_model.QueryChunksConfig(
+        chroma_host=chroma_host,
+        chroma_port=chroma_port,
+        collection_name=collection_name,
+        n_results=n_results,
+    )
 
-
-@app.command(
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
-)
-def vectorcode_lsp(ctx: typer.Context):
-    import sys
-    from vectorcode import lsp_main
-
-    sys.argv = [sys.argv[0]] + ctx.args
-    lsp_main.main()
+    try:
+        result = asyncio.run(
+            query_chunks_core(
+                query_text=query,
+                config=config,
+                logger=logger,
+                n_results=n_results,
+            )
+        )
+        if not result.chunks:
+            typer.echo("No results found.")
+        else:
+            for i, (chunk, path) in enumerate(zip(result.chunks, result.paths), 1):
+                typer.echo(f"{i}. Path: {path}\n   Chunk: {chunk}\n")
+    except Exception as e:
+        typer.echo(f"Error during query: {e}", err=True)
+        raise typer.Exit(code=1)
 
 
 if __name__ == "__main__":
