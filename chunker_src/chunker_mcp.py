@@ -159,12 +159,34 @@ def language_help() -> str:
     )
 
 
-def main():
+import sys
+
+def main() -> None:
+    """
+    Entry point for the Chunker MCP CLI. Ensures all required configuration
+    arguments are provided and non-empty before starting the MCP server.
+
+    Exits with an error if any required argument is missing or empty.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--project_dir", type=str, required=True)
-    parser.add_argument("--chroma_host", type=str, default=None)
-    parser.add_argument("--chroma_port", type=int, default=None)
+    parser.add_argument("--chroma_host", type=str, required=True)
+    parser.add_argument("--chroma_port", type=int, required=True)
     args, _ = parser.parse_known_args()
+
+    missing = []
+    if not args.project_dir or not args.project_dir.strip():
+        missing.append("--project_dir")
+    if not args.chroma_host or not args.chroma_host.strip():
+        missing.append("--chroma_host")
+    if args.chroma_port is None or str(args.chroma_port).strip() == "":
+        missing.append("--chroma_port")
+
+    if missing:
+        sys.stderr.write(
+            f"Error: The following required arguments are missing or empty: {', '.join(missing)}\n"
+        )
+        sys.exit(1)
 
     os.environ["PROJECT_DIR"] = args.project_dir
     os.environ["CHROMA_HOST"] = args.chroma_host
