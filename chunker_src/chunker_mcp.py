@@ -232,15 +232,19 @@ async def delete_collection(
         return f"Error deleting collection: {e}"
 
 
+from pathlib import Path
+import os
+import pathspec
+
 @mcp.tool(
-    description="List directories in the project directory to help debug file patterns.",
+    description="List directories in the project directory, excluding those ignored by .gitignore and .git.",
 )
 async def list_project_directories(
     ctx: Context,
     recursive: bool = False,
 ) -> str:
     """
-    List all directories in the project directory.
+    List all directories in the project directory, excluding those ignored by .gitignore and .git.
 
     Args:
         ctx (Context): The MCP context for logging.
@@ -249,36 +253,53 @@ async def list_project_directories(
     Returns:
         str: A newline-separated list of directories, or an error message.
     """
-
     project_dir = os.environ.get("PROJECT_DIR")
     if not project_dir:
         await ctx.log("error", "Error: PROJECT_DIR must be specified.")
         return "Error: PROJECT_DIR must be specified."
 
-    try:
-        base = Path(project_dir)
-        if not base.exists() or not base.is_dir():
-            await ctx.log(
-                "error", f"Error: PROJECT_DIR '{project_dir}' is not a valid directory."
-            )
-            return f"Error: PROJECT_DIR '{project_dir}' is not a valid directory."
+    base = Path(project_dir)
+    if not base.exists() or not base.is_dir():
+        await ctx.log(
+            "error", f"Error: PROJECT_DIR '{project_dir}' is not a valid directory."
+        )
+        return f"Error: PROJECT_DIR '{project_dir}' is not a valid directory."
 
-        if recursive:
-            dirs = [p.relative_to(base) for p in base.rglob("*") if p.is_dir()]
-        else:
-            dirs = [p.relative_to(base) for p in base.iterdir() if p.is_dir()]
+    gitignore_path = base / ".gitignore"
+    spec = None
+    if gitignore_path.exists():
+        with open(gitignore_path, "r", encoding="utf-8") as f:
+            gitignore_patterns = f.read().splitlines()
+        spec = pathspec.PathSpec.from_lines("gitwildmatch", gitignore_patterns)
 
-        if not dirs:
-            await ctx.log("info", "No directories found in the project directory.")
-            return "No directories found in the project directory."
+    dirs = []
+    if recursive:
+        for root, dirnames, _ in os.walk(base):
+            rel_root = Path(root).relative_to(base)
+            # Filter out .git and ignored directories in-place
+            dirnames[:] = [
+                d for d in dirnames
+                if d != ".git"
+                and not (
+                    spec and spec.match_file(str((rel_root / d).as_posix()))
+                )
+            ]
+            for d in dirnames:
+                dirs.append(rel_root / d)
+    else:
+        for d in base.iterdir():
+            if d.is_dir() and d.name != ".git":
+                rel_path = d.relative_to(base)
+                if not (spec and spec.match_file(str(rel_path.as_posix()))):
+                    dirs.append(rel_path)
 
-        dir_list = "\n".join(str(d) for d in sorted(dirs))
-        await ctx.log("info", f"Found directories:\n{dir_list}")
-        return f"Found directories:\n{dir_list}"
+    if not dirs:
+        await ctx.log("info", "No directories found in the project directory.")
+        return "No directories found in the project directory."
 
-    except Exception as e:
-        await ctx.log("error", f"Error listing directories: {e}")
-        return f"Error listing directories: {e}"
+    dir_list = "\n".join(str(d) for d in sorted(dirs))
+    await ctx.log("info", f"Found directories:\n{dir_list}")
+    return f"Found directories:\n{dir_list}"
 
 
 @mcp.prompt()
