@@ -12,7 +12,7 @@ from chunker_src import model as chunker_model
 PathLike = Union[str, Path]
 
 
-def get_uuid() -> str:
+def _get_uuid() -> str:
     return uuid.uuid4().hex
 
 
@@ -141,7 +141,7 @@ async def _add_chunks_to_collection(
         for idx in range(0, len(chunks), max_batch_size):
             inserted_chunks = chunks[idx : idx + max_batch_size]
             await collection.add(
-                ids=[get_uuid() for _ in inserted_chunks],
+                ids=[_get_uuid() for _ in inserted_chunks],
                 documents=inserted_chunks,
                 metadatas=metas[idx : idx + max_batch_size],
             )
