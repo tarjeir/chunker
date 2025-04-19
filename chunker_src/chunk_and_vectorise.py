@@ -266,7 +266,9 @@ def _filter_files_with_gitignore(files: list[Path], project_dir: Path) -> list[P
     return filtered_files
 
 
-def _check_files_within_project_dir(files: list[Path], project_dir: Path) -> None:
+def _check_files_within_project_dir(
+    files: list[Path], project_dir: Path
+) -> Union[None, ValueError]:
     """
     Ensure all files are within the project directory.
 
@@ -274,21 +276,20 @@ def _check_files_within_project_dir(files: list[Path], project_dir: Path) -> Non
         files (list[Path]): List of file paths to check.
         project_dir (Path): The root directory of the project.
 
-    Raises:
-        ValueError: If any file is outside the project directory.
+    Returns:
+        Union[None, ValueError]: None if all files are valid, or a ValueError if any file is outside the project directory.
     """
     for f in files:
         try:
             if not f.resolve().is_relative_to(project_dir.resolve()):
-                raise ValueError(
+                return ValueError(
                     f"File {f} is outside the project directory {project_dir}"
                 )
         except AttributeError:
-            # For Python < 3.9, is_relative_to is not available
             try:
                 f.resolve().relative_to(project_dir.resolve())
             except ValueError:
-                raise ValueError(
+                return ValueError(
                     f"File {f} is outside the project directory {project_dir}"
                 )
 
@@ -331,10 +332,9 @@ async def chunk_and_vectorise_core(
     if not files:
         return FileNotFoundError(f"No files found matching pattern: {pattern}")
 
-    try:
-        _check_files_within_project_dir(files, project_dir)
-    except ValueError as e:
-        return e
+    check_error = _check_files_within_project_dir(files, project_dir)
+    if check_error:
+        return check_error
 
     try:
         client = await chromadb.AsyncHttpClient(
