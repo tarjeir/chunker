@@ -3,12 +3,12 @@ import os
 import uuid
 from pathlib import Path
 from langchain_text_splitters import RecursiveCharacterTextSplitter, Language
-from chromadb.api.types import IncludeEnum
-from vectorcode.cli_utils import expand_path
 import chromadb
 import logging
-
+from typing import Union
 from chunker_src import model as chunker_model
+
+PathLike = Union[str, Path]
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
@@ -18,6 +18,13 @@ logger = logging.getLogger(__name__)
 
 def get_uuid() -> str:
     return uuid.uuid4().hex
+
+
+def expand_path(path: PathLike, absolute: bool = False) -> PathLike:
+    expanded = os.path.expanduser(os.path.expandvars(path))
+    if absolute:
+        return os.path.abspath(expanded)
+    return expanded
 
 
 async def add_file_with_langchain(
