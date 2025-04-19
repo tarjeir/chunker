@@ -50,4 +50,4 @@ class QueryResult:
     """
 
     chunks: list[str]
-    paths: list[str]
+    path: list[str]
