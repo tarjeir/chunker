@@ -122,7 +122,7 @@ def _compute_chunk_metadata(chunks: list[str], relative_path_str: str) -> list[d
 
     Args:
         chunks (list[str]): List of text chunks.
-        full_path_str (str): Absolute file path.
+        relative_path_str (str): Absolute file path.
 
     Returns:
         list[dict]: List of metadata dicts for each chunk.
