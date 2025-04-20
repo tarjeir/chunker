@@ -185,7 +185,7 @@ async def _update_stats(stats: dict[str, int], stats_lock, key: str):
         stats[key] += 1
 
 
-async def add_file_with_langchain(
+async def _add_file_with_langchain(
     file_path: str,
     logger: logging.Logger,
     collection: AsyncCollection,
@@ -374,7 +374,7 @@ async def chunk_and_vectorise_core(
 
     logger_instance.info(f"Starting vectorisation for {len(files)} files.")
     for file in files:
-        await add_file_with_langchain(
+        await _add_file_with_langchain(
             file_path=str(file),
             logger=logger_instance,
             collection=collection,
