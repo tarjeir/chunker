@@ -10,9 +10,70 @@ import logging
 from chunker_src import model as chunker_model
 import sys
 from typing import Any, Literal
+import pathspec
 
 
 mcp = FastMCP("Chunker MCP")
+
+
+def _parse_gitignore(project_dir: Path) -> pathspec.PathSpec | None:
+    """
+    Parse the .gitignore file in the project directory and return a PathSpec object.
+
+    Args:
+        project_dir (Path): The root directory of the project.
+
+    Returns:
+        PathSpec | None: The PathSpec object if .gitignore exists, else None.
+    """
+    gitignore_path = project_dir / ".gitignore"
+    if gitignore_path.exists():
+        with open(gitignore_path, "r", encoding="utf-8") as f:
+            gitignore_patterns = f.read().splitlines()
+        return pathspec.PathSpec.from_lines("gitwildmatch", gitignore_patterns)
+    return None
+
+
+def _traverse_project_dir_and_ignore_dirs(
+    base: Path, spec: pathspec.PathSpec | None, recursive: bool = False
+) -> list[Path]:
+    """
+    Traverse the project directory and return a list of directories,
+    excluding those ignored by .gitignore and .git.
+
+    Args:
+        base (Path): The root directory of the project.
+        spec (PathSpec | None): The PathSpec object for .gitignore, or None.
+        recursive (bool): Whether to traverse recursively.
+
+    Returns:
+        list[Path]: List of relative directory paths.
+    """
+    dirs = []
+    if recursive:
+        for root, dirnames, _ in os.walk(base):
+            rel_root = Path(root).relative_to(base)
+
+            def is_ignored_dir(rel_path: Path) -> bool:
+                if not spec:
+                    return False
+                rel_str = rel_path.as_posix()
+                return spec.match_file(rel_str) or spec.match_file(rel_str + "/")
+
+            dirnames[:] = [
+                d for d in dirnames
+                if d != ".git"
+                and not is_ignored_dir(rel_root / d)
+            ]
+            for d in dirnames:
+                dirs.append(rel_root / d)
+    else:
+        for d in base.iterdir():
+            if d.is_dir() and d.name != ".git":
+                rel_path = d.relative_to(base)
+                if not (spec and (spec.match_file(str(rel_path.as_posix())) or spec.match_file(str(rel_path.as_posix()) + "/"))):
+                    dirs.append(rel_path)
+    return dirs
 
 
 @mcp.tool(
@@ -232,10 +293,6 @@ async def delete_collection(
         return f"Error deleting collection: {e}"
 
 
-from pathlib import Path
-import os
-import pathspec
-
 @mcp.tool(
     description="List directories in the project directory, excluding those ignored by .gitignore and .git.",
 )
@@ -265,39 +322,8 @@ async def list_project_directories(
         )
         return f"Error: PROJECT_DIR '{project_dir}' is not a valid directory."
 
-    gitignore_path = base / ".gitignore"
-    spec = None
-    if gitignore_path.exists():
-        with open(gitignore_path, "r", encoding="utf-8") as f:
-            gitignore_patterns = f.read().splitlines()
-        spec = pathspec.PathSpec.from_lines("gitwildmatch", gitignore_patterns)
-
-    dirs = []
-    if recursive:
-        for root, dirnames, _ in os.walk(base):
-            rel_root = Path(root).relative_to(base)
-
-            def is_ignored_dir(rel_path: Path) -> bool:
-                if not spec:
-                    return False
-                rel_str = rel_path.as_posix()
-                # Check both with and without trailing slash
-                return spec.match_file(rel_str) or spec.match_file(rel_str + "/")
-
-            # Filter out .git and ignored directories in-place
-            dirnames[:] = [
-                d for d in dirnames
-                if d != ".git"
-                and not is_ignored_dir(rel_root / d)
-            ]
-            for d in dirnames:
-                dirs.append(rel_root / d)
-    else:
-        for d in base.iterdir():
-            if d.is_dir() and d.name != ".git":
-                rel_path = d.relative_to(base)
-                if not (spec and (spec.match_file(str(rel_path.as_posix())) or spec.match_file(str(rel_path.as_posix()) + "/"))):
-                    dirs.append(rel_path)
+    spec = _parse_gitignore(base)
+    dirs = _traverse_project_dir_and_ignore_dirs(base, spec, recursive=recursive)
 
     if not dirs:
         await ctx.log("info", "No directories found in the project directory.")
