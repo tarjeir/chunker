@@ -116,7 +116,7 @@ async def _read_and_chunk_file(
         return []
 
 
-def _compute_chunk_metadata(chunks: list[str], full_path_str: str) -> list[dict]:
+def _compute_chunk_metadata(chunks: list[str], relative_path_str: str) -> list[dict]:
     """
     Compute line ranges for each chunk.
 
@@ -133,7 +133,7 @@ def _compute_chunk_metadata(chunks: list[str], full_path_str: str) -> list[dict]
         chunk_lines = chunk.count("\n") + 1
         start_line = current_line
         end_line = current_line + chunk_lines - 1
-        metas.append({"path": full_path_str, "start": start_line, "end": end_line})
+        metas.append({"path": relative_path_str, "start": start_line, "end": end_line})
         current_line = end_line + 1
     return metas
 

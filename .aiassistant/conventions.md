@@ -61,6 +61,7 @@ Here's an example of how your output should be structured (note that this is a g
    - Use dataclass for internal objects like config 
 11. Do not use any "# comments" unless it is a # TODO
 12. All imports must be in the file header and not the methods
+13. Use named parameters in function calls
 </function_design>
 
 Type hints example
