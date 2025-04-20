@@ -276,13 +276,19 @@ async def list_project_directories(
     if recursive:
         for root, dirnames, _ in os.walk(base):
             rel_root = Path(root).relative_to(base)
+
+            def is_ignored_dir(rel_path: Path) -> bool:
+                if not spec:
+                    return False
+                rel_str = rel_path.as_posix()
+                # Check both with and without trailing slash
+                return spec.match_file(rel_str) or spec.match_file(rel_str + "/")
+
             # Filter out .git and ignored directories in-place
             dirnames[:] = [
                 d for d in dirnames
                 if d != ".git"
-                and not (
-                    spec and spec.match_file(str((rel_root / d).as_posix()))
-                )
+                and not is_ignored_dir(rel_root / d)
             ]
             for d in dirnames:
                 dirs.append(rel_root / d)
@@ -290,7 +296,7 @@ async def list_project_directories(
         for d in base.iterdir():
             if d.is_dir() and d.name != ".git":
                 rel_path = d.relative_to(base)
-                if not (spec and spec.match_file(str(rel_path.as_posix()))):
+                if not (spec and (spec.match_file(str(rel_path.as_posix())) or spec.match_file(str(rel_path.as_posix()) + "/"))):
                     dirs.append(rel_path)
 
     if not dirs:
