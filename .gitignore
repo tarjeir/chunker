@@ -132,3 +132,4 @@ Desktop.ini
 *.tmp
 *.orig
 *.vscode/
+.venv/
