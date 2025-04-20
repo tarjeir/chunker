@@ -40,10 +40,10 @@ RESULT=$(chunker query-chunks \
 echo "Query Results:"
 echo "$RESULT"
 
-if echo "$RESULT" | grep -q "$PROJECT_ROOT/$TEST_FILE"; then
-  echo "SUCCESS: Found chunks for $PROJECT_ROOT/$TEST_FILE"
+if echo "$RESULT" | grep -q "$TEST_FILE"; then
+  echo "SUCCESS: Found chunks for $TEST_FILE"
   exit 0
 else
-  echo "FAIL: No chunks found for $PROJECT_ROOT/$TEST_FILE"
+  echo "FAIL: No chunks found for $TEST_FILE"
   exit 1
 fi
