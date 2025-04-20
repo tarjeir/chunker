@@ -50,6 +50,7 @@ async def query_chunks_core(
     query_results = []
     documents = results.get("documents")
     metadatas = results.get("metadatas")
+    distances = results.get("distances")
     if (
         documents
         and isinstance(documents, list)
@@ -59,16 +60,26 @@ async def query_chunks_core(
         and isinstance(metadatas, list)
         and len(metadatas) > 0
         and isinstance(metadatas[0], list)
+        and distances
+        and isinstance(distances, list)
+        and len(distances) > 0
+        and isinstance(distances[0], list)
     ):
-        for doc, meta in zip(documents[0], metadatas[0]):
+        for doc, meta, distance in zip(documents[0], metadatas[0], distances[0]):
             chunk = [doc]
             path: list[str] = [
                 str(meta.get("path", "")) if isinstance(meta, dict) else ""
             ]
-            query_results.append(chunker_model.QueryResult(chunks=chunk, path=path))
+            query_results.append(
+                chunker_model.QueryResult(
+                    chunks=chunk,
+                    path=path,
+                    distances=[distance],
+                )
+            )
     else:
         logger.warning(
-            "QueryResult missing or malformed: no documents or metadatas found."
+            "QueryResult missing or malformed: no documents, metadatas, or distances found."
         )
 
     return query_results

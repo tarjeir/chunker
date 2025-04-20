@@ -47,10 +47,12 @@ class QueryResult(BaseModel):
     Args:
         chunks (list[str]): The retrieved chunk texts.
         path (list[str]): The file paths corresponding to each chunk.
+        distances (list[float]): The distance scores for each chunk.
     """
 
     chunks: list[str]
     path: list[str]
+    distances: list[float]
 
 
 @dataclass
