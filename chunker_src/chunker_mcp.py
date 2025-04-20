@@ -334,6 +334,58 @@ async def list_project_directories(
     return f"Found directories:\n{dir_list}"
 
 
+@mcp.tool(
+    description="Read the contents of a single file by relative path from the project directory.",
+)
+async def read_file(
+    relative_path: str,
+    ctx: Context,
+) -> str:
+    """
+    Reads the contents of a single file given a relative path from the project directory.
+
+    Args:
+        relative_path (str): The path to the file, relative to the project root.
+        ctx (Context): The MCP context for logging.
+
+    Returns:
+        str: The file contents, or an error message.
+    """
+    import os
+
+    project_dir = os.environ.get("PROJECT_DIR")
+    if not project_dir:
+        await ctx.log("error", "Error: PROJECT_DIR must be specified.")
+        return "Error: PROJECT_DIR must be specified."
+
+    base = Path(project_dir)
+    file_path = base / relative_path
+
+    # Security: ensure the resolved path is within the project directory
+    try:
+        file_path_resolved = file_path.resolve(strict=True)
+        base_resolved = base.resolve(strict=True)
+        if not str(file_path_resolved).startswith(str(base_resolved)):
+            await ctx.log("error", "Error: File is outside the project directory.")
+            return "Error: File is outside the project directory."
+    except FileNotFoundError:
+        await ctx.log("error", f"Error: File '{relative_path}' does not exist.")
+        return f"Error: File '{relative_path}' does not exist."
+
+    if not file_path.is_file():
+        await ctx.log("error", f"Error: '{relative_path}' is not a file.")
+        return f"Error: '{relative_path}' is not a file."
+
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            contents = f.read()
+        await ctx.log("info", f"Read file '{relative_path}' successfully.")
+        return contents
+    except Exception as e:
+        await ctx.log("error", f"Error reading file: {e}")
+        return f"Error reading file: {e}"
+
+
 @mcp.prompt()
 def pattern_help() -> str:
     """
@@ -440,6 +492,17 @@ def good_pattern_help() -> str:
         "If your pattern is rejected, check that it does not use '..' or start with '**/'."
     )
 
+
+@mcp.prompt()
+def read_file_help() -> str:
+    """
+    Explains how to use the read_file tool.
+    """
+    return (
+        "Use the 'read_file' tool to read the contents of a single file by specifying its path "
+        "relative to the project root directory. Only one file can be read at a time, and the path "
+        "must not be an expression or glob pattern. Example: 'src/main.py'."
+    )
 
 def main(
     transport: Literal["stdio", "sse"] | None = None,
