@@ -194,6 +194,7 @@ async def add_file_with_langchain(
     stats_lock: asyncio.Lock,
     max_batch_size: int,
     semaphore: asyncio.Semaphore,
+    project_dir: Path,
     language: str = "python",
 ) -> None:
     """
@@ -208,23 +209,25 @@ async def add_file_with_langchain(
         stats_lock (asyncio.Lock): Asyncio lock for stats.
         max_batch_size (int): Maximum batch size for collection.add().
         semaphore (asyncio.Semaphore): Semaphore to limit concurrency.
+        project_dir (Path): The root directory of the project.
         language (str): Programming language for chunking.
 
     Returns:
         None
     """
     full_path_str = await _expand_and_validate_path(file_path)
-    logger.info(f"Processing file: {full_path_str}")
+    rel_path_str = os.path.relpath(full_path_str, start=str(project_dir))
+    logger.info(f"Processing file: {rel_path_str}")
 
     num_existing_chunks = await _remove_existing_chunks(
-        collection, collection_lock, full_path_str
+        collection, collection_lock, rel_path_str
     )
 
     chunks = await _read_and_chunk_file(full_path_str, semaphore, language, logger)
     if not chunks or (len(chunks) == 1 and chunks[0] == ""):
         return
 
-    metas = _compute_chunk_metadata(chunks, full_path_str)
+    metas = _compute_chunk_metadata(chunks, rel_path_str)
 
     await _add_chunks_to_collection(
         collection, collection_lock, chunks, metas, max_batch_size
@@ -372,14 +375,15 @@ async def chunk_and_vectorise_core(
     logger_instance.info(f"Starting vectorisation for {len(files)} files.")
     for file in files:
         await add_file_with_langchain(
-            str(file),
-            logger_instance,
-            collection,
-            collection_lock,
-            stats,
-            stats_lock,
-            config.max_batch_size,
-            semaphore,
+            file_path=str(file),
+            logger=logger_instance,
+            collection=collection,
+            collection_lock=collection_lock,
+            stats=stats,
+            stats_lock=stats_lock,
+            max_batch_size=config.max_batch_size,
+            semaphore=semaphore,
+            project_dir=project_dir,
             language=config.language,
         )
         logger_instance.info(f"Finished processing {file}")
