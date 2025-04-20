@@ -41,7 +41,7 @@ async def query_chunks_core(
         results = await collection.query(
             query_texts=[query_text],
             n_results=n_results,
-            include=["documents", "metadatas"],
+            include=["documents", "metadatas", "distances"],
         )
     except Exception as e:
         logger.error(f"Query failed: {e}")
@@ -79,7 +79,7 @@ async def query_chunks_core(
             )
     else:
         logger.warning(
-            "QueryResult missing or malformed: no documents, metadatas, or distances found."
+            f"QueryResult missing or malformed: no documents {len(documents) if documents else 0}, metadatas {len(metadatas) if metadatas else 0}, or distances {len(distances) if distances else 0} found."
         )
 
     return query_results
