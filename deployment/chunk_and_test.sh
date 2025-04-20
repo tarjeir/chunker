@@ -37,6 +37,9 @@ RESULT=$(chunker query-chunks \
   --collection-name "default" \
   --n-results 10)
 
+echo "Query Results:"
+echo "$RESULT"
+
 if echo "$RESULT" | grep -q "$PROJECT_ROOT/$TEST_FILE"; then
   echo "SUCCESS: Found chunks for $PROJECT_ROOT/$TEST_FILE"
   exit 0
