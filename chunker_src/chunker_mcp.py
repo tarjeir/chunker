@@ -509,6 +509,28 @@ def read_file_help() -> str:
     )
 
 
+@mcp.prompt(name="query_chunks")
+def query_chunks_help() -> str:
+    """
+    Explains how to use the query_chunks tool.
+    """
+    return (
+        "Use the 'query_chunks' tool to search for relevant code or documentation chunks "
+        "in your project using a natural language query. "
+        "Provide a query string describing what you are looking for, and the tool will return "
+        "the most relevant chunks from the ChromaDB collection.\n"
+        "\n"
+        "Arguments:\n"
+        "- query: The search string or question you want to ask about your codebase.\n"
+        "\n"
+        "Example usage:\n"
+        "- 'How is authentication handled?'\n"
+        "- 'Show me all functions that use requests.'\n"
+        "\n"
+        "The number of results can be configured via the CHROMA_N_RESULTS environment variable (default: 10)."
+    )
+
+
 def main(
     transport: Literal["stdio", "sse"] | None = None,
     **transport_kwargs: Any,
