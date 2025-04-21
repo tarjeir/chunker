@@ -61,9 +61,7 @@ def _traverse_project_dir_and_ignore_dirs(
                 return spec.match_file(rel_str) or spec.match_file(rel_str + "/")
 
             dirnames[:] = [
-                d for d in dirnames
-                if d != ".git"
-                and not is_ignored_dir(rel_root / d)
+                d for d in dirnames if d != ".git" and not is_ignored_dir(rel_root / d)
             ]
             for d in dirnames:
                 dirs.append(rel_root / d)
@@ -71,7 +69,13 @@ def _traverse_project_dir_and_ignore_dirs(
         for d in base.iterdir():
             if d.is_dir() and d.name != ".git":
                 rel_path = d.relative_to(base)
-                if not (spec and (spec.match_file(str(rel_path.as_posix())) or spec.match_file(str(rel_path.as_posix()) + "/"))):
+                if not (
+                    spec
+                    and (
+                        spec.match_file(str(rel_path.as_posix()))
+                        or spec.match_file(str(rel_path.as_posix()) + "/")
+                    )
+                ):
                     dirs.append(rel_path)
     return dirs
 
@@ -386,7 +390,7 @@ async def read_file(
         return f"Error reading file: {e}"
 
 
-@mcp.prompt()
+@mcp.prompt(name="chunk_and_vectorise")
 def pattern_help() -> str:
     """
     Explains how to write file patterns for chunking and vectorising.
@@ -401,7 +405,7 @@ def pattern_help() -> str:
     )
 
 
-@mcp.prompt()
+@mcp.prompt(name="chunk_and_vectorise")
 def example_patterns() -> list:
     """
     Provides example file patterns for common use cases.
@@ -422,7 +426,7 @@ def example_patterns() -> list:
     ]
 
 
-@mcp.prompt()
+@mcp.prompt(name="chunk_and_vectorise")
 def language_help() -> str:
     """
     Explains how to choose the language for chunking and vectorising.
@@ -460,7 +464,7 @@ def language_help() -> str:
     )
 
 
-@mcp.prompt()
+@mcp.prompt(name="chunk_and_vectorise")
 def good_pattern_help() -> str:
     """
     Explains what makes a good file pattern for chunking and vectorising, including enforced rules.
@@ -493,7 +497,7 @@ def good_pattern_help() -> str:
     )
 
 
-@mcp.prompt()
+@mcp.prompt(name="read_file")
 def read_file_help() -> str:
     """
     Explains how to use the read_file tool.
@@ -503,6 +507,7 @@ def read_file_help() -> str:
         "relative to the project root directory. Only one file can be read at a time, and the path "
         "must not be an expression or glob pattern. Example: 'src/main.py'."
     )
+
 
 def main(
     transport: Literal["stdio", "sse"] | None = None,
