@@ -515,18 +515,20 @@ def query_chunks_help() -> str:
     Explains how to use the query_chunks tool.
     """
     return (
-        "Use the 'query_chunks' tool to search for relevant code or documentation chunks "
-        "in your project using a natural language query. "
-        "Provide a query string describing what you are looking for, and the tool will return "
-        "the most relevant chunks from the ChromaDB collection.\n"
+        "Use the 'query_chunks' tool to perform a semantic vector search over your project's code and documentation. "
+        "This tool uses embeddings to find the most relevant code items—such as functions, classes, or docstrings—"
+        "that best match your natural language query. "
+        "It is optimized for code and technical documentation, so queries should focus on code concepts, usage, or structure.\n"
         "\n"
         "Arguments:\n"
-        "- query: The search string or question you want to ask about your codebase.\n"
+        "- query: The search string or question about your codebase (e.g., function names, class responsibilities, or documentation topics).\n"
         "\n"
         "Example usage:\n"
-        "- 'How is authentication handled?'\n"
-        "- 'Show me all functions that use requests.'\n"
+        "- 'Where is the database connection established?'\n"
+        "- 'List all classes that inherit from BaseModel.'\n"
+        "- 'Show me docstrings related to authentication.'\n"
         "\n"
+        "Note: This is a vector (embedding-based) search, so results are based on semantic similarity, not exact keyword matches.\n"
         "The number of results can be configured via the CHROMA_N_RESULTS environment variable (default: 10)."
     )
 
